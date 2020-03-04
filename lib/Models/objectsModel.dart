@@ -7,7 +7,7 @@ class ObjectsModel {
   ObjectsModel({this.id, this.type, this.name, this.desc});
 
   factory ObjectsModel.fromJson(_json) {
-    var _desc = '';
+    var _desc = ''; 
     if (_json['common']['desc'] != null) {
       if (_json['common']['desc'] is String) {
         _desc = _json['common']['desc'];
