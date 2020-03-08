@@ -13,6 +13,7 @@ class AllAdapterPage extends StatefulWidget {
 class _AllAdapterPageState extends State<AllAdapterPage>
     with SingleTickerProviderStateMixin {
   final List<Tab> myTabs = <Tab>[
+    Tab(text: 'Widgets'),
     Tab(text: 'Favoriten'),
     Tab(text: 'Adapter'),
   ];
@@ -42,9 +43,14 @@ class _AllAdapterPageState extends State<AllAdapterPage>
         ),
       ),
       body: TabBarView(
-          controller: _tabController,
-          children: myTabs.map((Tab tab) {
-            if (tab.text == 'Adapter') {
+        controller: _tabController,
+        children: myTabs.map(
+          (Tab tab) {
+            if (tab.text == 'Widgets') {
+              return Center(
+                child: Text('Meine Widgets'),
+              );
+            } else if (tab.text == 'Adapter') {
               return Center(
                 child: FutureBuilder(
                   future: httpService.getAllAdapters(),
@@ -86,19 +92,25 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                   },
                 ),
               );
+            } else if (tab.text == 'Favoriten') {
+              return Center(
+                child: Text('Meine Favoriten'),
+              );
+            } else {
+              return Center(
+                child: Text('Tab not found'),
+              );
             }
-            else if (tab.text == 'Favoriten') {
-              return Center(child: Text('Test'));
-            }
-            else {
-              return Center(child: Text('Tab not found'));
-            }
-          }).toList()),
+          },
+        ).toList(),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          setState(() {
-            httpService.clearGetAllAdapters();
-          });
+          setState(
+            () {
+              httpService.clearGetAllAdapters();
+            },
+          );
         },
         child: Icon(Icons.refresh),
       ),

@@ -26,9 +26,7 @@ class _SettingsPageState extends State<SettingsPage> {
             future: _loadIpAddress(),
             builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
               if (snapshot.hasData) {
-                _controller.text = snapshot.data;
                 return TextFormField(
-                  controller: _controller,
                   decoration: const InputDecoration(
                     icon: Icon(Icons.network_locked),
                     hintText: 'IP Adresse und Port vom ioBroker',
@@ -41,6 +39,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     });
                   },
                 );
+              } else if (snapshot.hasError) {
+                return Text('Es ist ein Fehler aufgetretn');
               } else {
                 return CircularProgressIndicator();
               }
@@ -65,6 +65,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<String> _loadIpAddress() {
-    return saveService.getIpAddress();
+    return Future(null);
+    // saveService.getIpAddress();
   }
 }

@@ -44,9 +44,7 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
               return ListView.builder(
                 itemCount: objects.length,
                 itemBuilder: (context, index) {
-                  return ObjectListTile(
-                    object: objects[index]
-                  );
+                  return ObjectListTile(object: objects[index]);
                 },
               );
             }
@@ -116,6 +114,25 @@ class _ObjectListTileState extends State<ObjectListTile> {
     return ListTile(
       title: Text(widget.object.id),
       subtitle: Text(widget.object.type),
+      onTap: () {
+        return showDialog<void>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(widget.object.name),
+              content: const Text('This item is no longer available'),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text('Ok'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
       trailing: IconButton(
         color: _isFavorite ? Theme.of(context).accentColor : null,
         icon: Icon(
