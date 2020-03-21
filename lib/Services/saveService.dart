@@ -8,13 +8,4 @@ class SaveService {
 //TODO
   }
 
-  saveIpAddress(String ipAddress) async {
-    var _prefs = await SharedPreferences.getInstance();
-    _prefs.setString('ipAddress', ipAddress);
-  }
-
-  Future<String> getIpAddress() async {
-    var _prefs = await SharedPreferences.getInstance();
-    return _prefs.getString('ipAddress');
-  }
 }
