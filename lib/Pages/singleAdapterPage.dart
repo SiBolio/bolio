@@ -112,15 +112,14 @@ class _ObjectListTileState extends State<ObjectListTile> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(widget.object.id),
-      subtitle: Text(widget.object.type),
+      title: Text(widget.object.name),
+      subtitle: Text(widget.object.id),
       onTap: () {
         return showDialog<void>(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
               title: Text(widget.object.name),
-              content: const Text('This item is no longer available'),
               actions: <Widget>[
                 FlatButton(
                   child: Text('Ok'),

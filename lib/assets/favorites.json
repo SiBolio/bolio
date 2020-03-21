@@ -1,0 +1,12 @@
+{
+    "favorites": [
+        {
+            "id": "zigbee.0.00158d0002c99d77.humidity",
+            "title": "Luftfeuchtigkeit Schlafzimmer"
+        },
+        {
+            "id": "zigbee.0.00158d0001c2c8d8.temperature",
+            "title": "Temperatur Außen"
+        }
+    ]
+}

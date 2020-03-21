@@ -1,3 +1,15 @@
+class FavoriteList {
+  final List<FavoriteModel> favorites;
+
+  FavoriteList({this.favorites});
+
+  factory FavoriteList.fromJson(List<dynamic> json) {
+    return new FavoriteList(
+      favorites: json.map((i) => FavoriteModel.fromJson(i)).toList(),
+    );
+  }
+}
+
 class FavoriteModel {
   final String id;
   final String title;
@@ -6,8 +18,6 @@ class FavoriteModel {
     this.id,
     this.title,
   });
-
-  Map<String, dynamic> toJson() => {'id': id, 'title': title};
 
   factory FavoriteModel.fromJson(Map<String, dynamic> json) {
     return FavoriteModel(
