@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smarthome/Services/saveService.dart';
+import 'package:smarthome/Services/favoriteService.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -7,11 +7,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool _edited = false;
-  String _ipAdress = '';
-  SaveService saveService = new SaveService();
 
-  final _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +17,6 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
       body: Center(child: Text('ToDo')),
       floatingActionButton: new Visibility(
-        visible: _edited,
         child: FloatingActionButton(
           onPressed: () {},
           child: Icon(Icons.save),

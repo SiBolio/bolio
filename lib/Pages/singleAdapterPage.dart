@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smarthome/Models/objectsModel.dart';
 import 'package:smarthome/Services/httpService.dart';
-import 'package:smarthome/Services/saveService.dart';
+import 'package:smarthome/Services/favoriteService.dart';
 
 HttpService httpService = new HttpService();
 
@@ -107,7 +107,7 @@ class ObjectListTile extends StatefulWidget {
 
 class _ObjectListTileState extends State<ObjectListTile> {
   bool _isFavorite = false;
-  SaveService saveService = new SaveService();
+  FavoriteService saveService = new FavoriteService();
 
   @override
   Widget build(BuildContext context) {
