@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:smarthome/Models/adapterModel.dart';
 import 'package:smarthome/Pages/singleAdapterPage.dart';
+import 'package:smarthome/Services/favoriteService.dart';
 import 'package:smarthome/Services/httpService.dart';
 
 HttpService httpService = new HttpService();
+FavoriteService favoriteService = new FavoriteService();
 
 class AllAdapterPage extends StatefulWidget {
   @override
@@ -93,6 +95,8 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                 ),
               );
             } else if (tab.text == 'Favoriten') {
+              favoriteService.getFavorites(context);
+
               return Center(
                 child: Text('Meine Favoriten'),
               );
