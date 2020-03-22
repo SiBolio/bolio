@@ -28,7 +28,7 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
       ),
       body: Center(
         child: FutureBuilder(
-          future: httpService.getAdapterObjects(widget.name),
+          future: httpService.getAdapterObjects(widget.name, context),
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
               return new CircularProgressIndicator();
@@ -44,7 +44,10 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
               return ListView.builder(
                 itemCount: objects.length,
                 itemBuilder: (context, index) {
-                  return ObjectListTile(object: objects[index]);
+                  return ObjectListTile(
+                    object: objects[index],
+                    isFavorite: objects[index].isfavorite,
+                  );
                 },
               );
             }
@@ -98,16 +101,23 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
 
 class ObjectListTile extends StatefulWidget {
   final ObjectsModel object;
+  bool isFavorite;
 
-  ObjectListTile({this.object});
+  ObjectListTile({this.object, this.isFavorite});
 
   @override
   _ObjectListTileState createState() => _ObjectListTileState();
 }
 
 class _ObjectListTileState extends State<ObjectListTile> {
-  bool _isFavorite = false;
+  bool _isFavorite;
   FavoriteService saveService = new FavoriteService();
+
+  @override
+  void initState() {
+    super.initState();
+    _isFavorite = widget.isFavorite;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -139,8 +149,17 @@ class _ObjectListTileState extends State<ObjectListTile> {
         ),
         onPressed: () {
           setState(() {
-            saveService.addObjectToFavorite(widget.object);
             _isFavorite = !_isFavorite;
+            _isFavorite
+                ? saveService.addObjectToFavorite(widget.object, context)
+                : saveService.removeObjectFromFavorites(
+                    widget.object.id, context);
+            String snackBarText =
+                _isFavorite ? 'Favorit hinzugefügt' : 'Favorit entfernt';
+            final snackBar = SnackBar(
+              content: Text(snackBarText),
+            );
+            Scaffold.of(context).showSnackBar(snackBar);
           });
         },
       ),

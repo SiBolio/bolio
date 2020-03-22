@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smarthome/Services/favoriteService.dart';
 
 class SettingsPage extends StatefulWidget {
   @override

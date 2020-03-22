@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smarthome/Models/adapterModel.dart';
+import 'package:smarthome/Models/favoriteModel.dart';
 import 'package:smarthome/Pages/singleAdapterPage.dart';
 import 'package:smarthome/Services/favoriteService.dart';
 import 'package:smarthome/Services/httpService.dart';
@@ -15,7 +16,6 @@ class AllAdapterPage extends StatefulWidget {
 class _AllAdapterPageState extends State<AllAdapterPage>
     with SingleTickerProviderStateMixin {
   final List<Tab> myTabs = <Tab>[
-    Tab(text: 'Widgets'),
     Tab(text: 'Favoriten'),
     Tab(text: 'Adapter'),
   ];
@@ -48,11 +48,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
         controller: _tabController,
         children: myTabs.map(
           (Tab tab) {
-            if (tab.text == 'Widgets') {
-              return Center(
-                child: Text('Meine Widgets'),
-              );
-            } else if (tab.text == 'Adapter') {
+            if (tab.text == 'Adapter') {
               return Center(
                 child: FutureBuilder(
                   future: httpService.getAllAdapters(),
@@ -94,15 +90,47 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                   },
                 ),
               );
-            } else if (tab.text == 'Favoriten') {
-              favoriteService.getFavorites(context);
-
-              return Center(
-                child: Text('Meine Favoriten'),
-              );
             } else {
               return Center(
-                child: Text('Tab not found'),
+                child: FutureBuilder(
+                  future: favoriteService.getFavorites(context),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState != ConnectionState.done) {
+                      return new CircularProgressIndicator();
+                    }
+                    if (snapshot.hasError) {
+                      return new CircularProgressIndicator();
+                    } else {
+                      List<FavoriteModel> objects = snapshot.data ?? [];
+                      return ListView.builder(
+                        itemCount: objects.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            title: Text(objects[index].title),
+                            subtitle: Text(objects[index].id),
+                            trailing: IconButton(
+                              icon: Icon(Icons.delete),
+                              onPressed: () {
+                                FavoriteService favoriteService =
+                                    new FavoriteService();
+                                setState(
+                                  () {
+                                    favoriteService.removeObjectFromFavorites(
+                                        objects[index].id, context);
+                                  },
+                                );
+                                final snackBar = SnackBar(
+                                  content: Text('Favorit entfernt'),
+                                );
+                                Scaffold.of(context).showSnackBar(snackBar);
+                              },
+                            ),
+                          );
+                        },
+                      );
+                    }
+                  },
+                ),
               );
             }
           },

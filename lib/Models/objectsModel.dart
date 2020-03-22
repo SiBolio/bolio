@@ -3,6 +3,7 @@ class ObjectsModel {
   final String type;
   final String name;
   final String desc;
+  bool isfavorite;
 
   ObjectsModel({this.id, this.type, this.name, this.desc});
 
