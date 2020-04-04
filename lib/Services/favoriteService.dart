@@ -6,10 +6,17 @@ import 'package:smarthome/Models/favoriteModel.dart';
 import 'package:smarthome/Models/objectsModel.dart';
 
 class FavoriteService {
-  addObjectToFavorite(ObjectsModel object, context) async {
+  addObjectToFavorites(ObjectsModel object, context) async {
     List<FavoriteModel> favorites = await getFavorites(context);
     FavoriteModel favorite =
         new FavoriteModel(id: object.id, title: object.name);
+    favorites.add(favorite);
+    var prefs = await SharedPreferences.getInstance();
+    prefs.setString('favorites', jsonEncode(_encodeFavorites(favorites)));
+  }
+
+  addFavoriteToFavorites(FavoriteModel favorite, context) async {
+    List<FavoriteModel> favorites = await getFavorites(context);
     favorites.add(favorite);
     var prefs = await SharedPreferences.getInstance();
     prefs.setString('favorites', jsonEncode(_encodeFavorites(favorites)));
@@ -40,6 +47,17 @@ class FavoriteService {
     for (var favorite in favorites) {
       if (favorite.id == id) {
         favorites.remove(favorite);
+      }
+    }
+    var prefs = await SharedPreferences.getInstance();
+    prefs.setString('favorites', jsonEncode(_encodeFavorites(favorites)));
+  }
+
+  updateFavorite(String id, String title, context) async {
+    List<FavoriteModel> favorites = await getFavorites(context);
+    for (var favorite in favorites) {
+      if (favorite.id == id) {
+        favorite.setTitle(title);
       }
     }
     var prefs = await SharedPreferences.getInstance();

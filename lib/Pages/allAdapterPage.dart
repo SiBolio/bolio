@@ -108,6 +108,65 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                           return ListTile(
                             title: Text(objects[index].title),
                             subtitle: Text(objects[index].id),
+                            onTap: () {
+                              return showDialog<void>(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  TextEditingController nameController =
+                                      new TextEditingController();
+                                  nameController.text = objects[index].title;
+                                  return AlertDialog(
+                                    title: Text('Objekt bearbeiten'),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        TextFormField(
+                                          controller: nameController,
+                                          decoration: InputDecoration(
+                                              labelText: 'Objektname'),
+                                        ),
+                                        TextFormField(
+                                          enabled: false,
+                                          initialValue: objects[index].id,
+                                          decoration: InputDecoration(
+                                              labelText: 'Objekt ID'),
+                                        ),
+                                      ],
+                                    ),
+                                    actions: <Widget>[
+                                      FlatButton(
+                                        child: Text('Abbrechen'),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                      RaisedButton(
+                                        child: Text('Speichern'),
+                                        onPressed: () async {
+                                          FavoriteModel updateFavorite =
+                                              new FavoriteModel(
+                                            id: objects[index].id,
+                                            title: nameController.text,
+                                          );
+                                          FavoriteService favoriteService =
+                                              new FavoriteService();
+                                          setState(
+                                            () {
+                                              favoriteService.updateFavorite(
+                                                objects[index].id,
+                                                nameController.text,
+                                                context,
+                                              );
+                                            },
+                                          );
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
                             trailing: IconButton(
                               icon: Icon(Icons.delete),
                               onPressed: () {

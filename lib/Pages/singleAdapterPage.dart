@@ -151,7 +151,7 @@ class _ObjectListTileState extends State<ObjectListTile> {
           setState(() {
             _isFavorite = !_isFavorite;
             _isFavorite
-                ? saveService.addObjectToFavorite(widget.object, context)
+                ? saveService.addObjectToFavorites(widget.object, context)
                 : saveService.removeObjectFromFavorites(
                     widget.object.id, context);
             String snackBarText =

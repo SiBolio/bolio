@@ -1,6 +1,6 @@
 class FavoriteModel {
   final String id;
-  final String title;
+  String title;
 
   FavoriteModel({
     this.id,
@@ -18,4 +18,8 @@ class FavoriteModel {
         'id': id,
         'title': title,
       };
+
+  setTitle(String title) {
+    this.title = title;
+  }
 }

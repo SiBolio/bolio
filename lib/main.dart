@@ -10,7 +10,8 @@ class Smarthome extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        accentColor: Colors.tealAccent,
+        primarySwatch: Colors.teal,
         brightness: Brightness.dark,
       ),
       home: StartPage(),
