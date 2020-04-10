@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:smarthome/Componts/SmarthomeCard.dart';
 import 'package:smarthome/Models/favoriteModel.dart';
 import 'package:smarthome/Pages/allAdapterPage.dart';
 import 'package:smarthome/Services/favoriteService.dart';
-import 'settingsPage.dart';
 
 class StartPage extends StatefulWidget {
   @override
@@ -13,33 +13,11 @@ class StartPage extends StatefulWidget {
 class _StartPageState extends State<StartPage> {
   FavoriteService favoriteService = new FavoriteService();
 
-  _getSmarthomeCards(List<FavoriteModel> favorites) {
-    List<SmarthomeCard> smarthomeCards = new List();
-    for (var favorite in favorites) {
-      smarthomeCards.add(new SmarthomeCard(id: favorite.id, title: favorite.title));
-    }
-    return smarthomeCards;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Smarthome'),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => SettingsPage()),
-              );
-            },
-          ),
-        ],
-      ),
+      backgroundColor: Colors.black,
       body: Container(
-        padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 2.0),
         child: FutureBuilder(
           future: favoriteService.getFavorites(context),
           builder: (context, snapshot) {
@@ -49,10 +27,34 @@ class _StartPageState extends State<StartPage> {
               return new CircularProgressIndicator();
             } else {
               List<FavoriteModel> favorites = snapshot.data ?? [];
-              return GridView.count(
-                crossAxisCount: 2,
-                padding: EdgeInsets.all(3.0),
-                children: _getSmarthomeCards(favorites),
+              return StaggeredGridView.countBuilder(
+                crossAxisCount: 4,
+                itemCount: favorites.length,
+                itemBuilder: (BuildContext context, int index) => new Container(
+                  child: SmarthomeCard(
+                    id: favorites[index].id,
+                    title: favorites[index].title,
+                    objectType: favorites[index].objectType,
+                    tileSize: favorites[index].tileSize,
+                  ),
+                ),
+                staggeredTileBuilder: (int index) {
+                  var tileWidth;
+                  var tileHeight;
+                  if (favorites[index].tileSize == 'S') {
+                    tileWidth = 2;
+                    tileHeight = 1;
+                  } else if (favorites[index].tileSize == 'M') {
+                    tileWidth = 2;
+                    tileHeight = 2;
+                  } else if (favorites[index].tileSize == 'L') {
+                    tileWidth = 4;
+                    tileHeight = 2;
+                  }
+                  return new StaggeredTile.count(tileWidth, tileHeight);
+                },
+                mainAxisSpacing: 2.0,
+                crossAxisSpacing: 2.0,
               );
             }
           },
@@ -63,9 +65,11 @@ class _StartPageState extends State<StartPage> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AllAdapterPage()),
-          );
+          ).then((value) {
+            setState(() {});
+          });
         },
-        child: Icon(Icons.create),
+        child: Icon(Icons.settings),
       ),
     );
   }

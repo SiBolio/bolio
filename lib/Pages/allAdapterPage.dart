@@ -18,6 +18,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
   final List<Tab> myTabs = <Tab>[
     Tab(text: 'Favoriten'),
     Tab(text: 'Adapter'),
+    Tab(text: 'Sonstiges')
   ];
 
   TabController _tabController;
@@ -37,6 +38,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text('Meine Objekte'),
         bottom: TabBar(
@@ -48,7 +50,11 @@ class _AllAdapterPageState extends State<AllAdapterPage>
         controller: _tabController,
         children: myTabs.map(
           (Tab tab) {
-            if (tab.text == 'Adapter') {
+            if (tab.text == 'Sonstiges') {
+              return Center(
+                child: Text('TODO'),
+              );
+            } else if (tab.text == 'Adapter') {
               return Center(
                 child: FutureBuilder(
                   future: httpService.getAllAdapters(),
@@ -91,7 +97,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                 ),
               );
             } else {
-              return Center(
+              return Container(
                 child: FutureBuilder(
                   future: favoriteService.getFavorites(context),
                   builder: (context, snapshot) {
@@ -107,7 +113,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                         itemBuilder: (context, index) {
                           return ListTile(
                             title: Text(objects[index].title),
-                            subtitle: Text(objects[index].id),
+                            subtitle: Text(objects[index].objectType),
                             onTap: () {
                               return showDialog<void>(
                                 context: context,
@@ -115,54 +121,147 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                                   TextEditingController nameController =
                                       new TextEditingController();
                                   nameController.text = objects[index].title;
-                                  return AlertDialog(
-                                    title: Text('Objekt bearbeiten'),
-                                    content: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        TextFormField(
-                                          controller: nameController,
-                                          decoration: InputDecoration(
-                                              labelText: 'Objektname'),
+
+                                  List _isSelected = <bool>[
+                                    objects[index].tileSize == 'S',
+                                    objects[index].tileSize == 'M',
+                                    objects[index].tileSize == 'L'
+                                  ];
+
+                                  String _isSelectedDropdown =
+                                      objects[index].objectType;
+
+                                  return StatefulBuilder(
+                                    builder: (context, setState) {
+                                      return AlertDialog(
+                                        title: Text('Objekt bearbeiten'),
+                                        content: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            TextFormField(
+                                              controller: nameController,
+                                              decoration: InputDecoration(
+                                                  labelText: 'Objektname'),
+                                            ),
+                                            TextFormField(
+                                              enabled: false,
+                                              initialValue: objects[index].id,
+                                              decoration: InputDecoration(
+                                                  labelText: 'Objekt ID'),
+                                            ),
+                                            Wrap(
+                                              crossAxisAlignment:
+                                                  WrapCrossAlignment.center,
+                                              spacing: 5,
+                                              children: [
+                                                Text('Anzeigegröße:'),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 10.0),
+                                                  child: ToggleButtons(
+                                                    children: <Widget>[
+                                                      Text('S'),
+                                                      Text('M'),
+                                                      Text('L'),
+                                                    ],
+                                                    onPressed: (int index) {
+                                                      setState(
+                                                        () {
+                                                          for (int buttonIndex =
+                                                                  0;
+                                                              buttonIndex <
+                                                                  _isSelected
+                                                                      .length;
+                                                              buttonIndex++) {
+                                                            if (buttonIndex ==
+                                                                index) {
+                                                              _isSelected[
+                                                                      buttonIndex] =
+                                                                  true;
+                                                            } else {
+                                                              _isSelected[
+                                                                      buttonIndex] =
+                                                                  false;
+                                                            }
+                                                          }
+                                                        },
+                                                      );
+                                                    },
+                                                    isSelected: _isSelected,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            Wrap(
+                                              crossAxisAlignment:
+                                                  WrapCrossAlignment.center,
+                                              spacing: 5,
+                                              children: [
+                                                Text('Objekttyp:'),
+                                                DropdownButton<String>(
+                                                  value: _isSelectedDropdown,
+                                                  items: <String>[
+                                                    'Einzelwert',
+                                                    'On/Off Button',
+                                                    'Graph',
+                                                    'Slider'
+                                                  ].map((String value) {
+                                                    return new DropdownMenuItem<
+                                                        String>(
+                                                      value: value,
+                                                      child: new Text(value),
+                                                    );
+                                                  }).toList(),
+                                                  onChanged: (String newValue) {
+                                                    setState(
+                                                      () {
+                                                        _isSelectedDropdown =
+                                                            newValue;
+                                                      },
+                                                    );
+                                                  },
+                                                )
+                                              ],
+                                            ),
+                                          ],
                                         ),
-                                        TextFormField(
-                                          enabled: false,
-                                          initialValue: objects[index].id,
-                                          decoration: InputDecoration(
-                                              labelText: 'Objekt ID'),
-                                        ),
-                                      ],
-                                    ),
-                                    actions: <Widget>[
-                                      FlatButton(
-                                        child: Text('Abbrechen'),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                      RaisedButton(
-                                        child: Text('Speichern'),
-                                        onPressed: () async {
-                                          FavoriteModel updateFavorite =
-                                              new FavoriteModel(
-                                            id: objects[index].id,
-                                            title: nameController.text,
-                                          );
-                                          FavoriteService favoriteService =
-                                              new FavoriteService();
-                                          setState(
-                                            () {
-                                              favoriteService.updateFavorite(
-                                                objects[index].id,
-                                                nameController.text,
-                                                context,
-                                              );
+                                        actions: <Widget>[
+                                          FlatButton(
+                                            child: Text('Abbrechen'),
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
                                             },
-                                          );
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                    ],
+                                          ),
+                                          RaisedButton(
+                                            child: Text('Speichern'),
+                                            onPressed: () async {
+                                              FavoriteService favoriteService =
+                                                  new FavoriteService();
+                                              setState(
+                                                () {
+                                                  var tileSize = 'S';
+                                                  if (_isSelected[1]) {
+                                                    tileSize = 'M';
+                                                  } else if (_isSelected[2]) {
+                                                    tileSize = 'L';
+                                                  }
+                                                  favoriteService
+                                                      .updateFavorite(
+                                                    objects[index].id,
+                                                    nameController.text,
+                                                    tileSize,
+                                                    _isSelectedDropdown,
+                                                    context,
+                                                  );
+                                                },
+                                              );
+                                              Navigator.of(context).pop();
+                                            },
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   );
                                 },
                               );
@@ -194,16 +293,6 @@ class _AllAdapterPageState extends State<AllAdapterPage>
             }
           },
         ).toList(),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          setState(
-            () {
-              httpService.clearGetAllAdapters();
-            },
-          );
-        },
-        child: Icon(Icons.refresh),
       ),
     );
   }

@@ -23,6 +23,7 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
         title: _isSearching ? _buildSearchField() : Text(widget.title),
       ),
@@ -101,7 +102,7 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
 
 class ObjectListTile extends StatefulWidget {
   final ObjectsModel object;
-  bool isFavorite;
+  final bool isFavorite;
 
   ObjectListTile({this.object, this.isFavorite});
 
