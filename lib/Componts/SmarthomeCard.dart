@@ -9,7 +9,8 @@ class SmarthomeCard extends StatefulWidget {
   final String tileSize;
   final String timeSpan;
 
-  SmarthomeCard({this.id, this.title, this.objectType, this.tileSize, this.timeSpan});
+  SmarthomeCard(
+      {this.id, this.title, this.objectType, this.tileSize, this.timeSpan});
 
   @override
   _SmarthomeCardState createState() => _SmarthomeCardState();
@@ -94,6 +95,26 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                 switchValue = false;
               }
               return _getOnOffCard();
+            } else {
+              return Text('-');
+            }
+          },
+        );
+      } else {
+        return _getOnOffCard();
+      }
+    } else if (widget.objectType == 'Tür/Fensterkontakt') {
+      if (switchValue == null) {
+        return FutureBuilder(
+          future: http.getObjectValue(widget.id),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (snapshot.hasData) {
+              if (snapshot.data == 'true') {
+                switchValue = true;
+              } else {
+                switchValue = false;
+              }
+              return _getContactCard();
             } else {
               return Text('-');
             }
@@ -266,6 +287,36 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _getContactCard() {
+    return Card(
+      color: Colors.grey[900],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Icon(
+              switchValue ? Icons.lock_open : Icons.lock,
+              color: Colors.grey,
+              size: 44.0,
+            ),
+          ),
+          Flexible(
+            child: Text(
+              widget.title,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 16.0,
+                color: Colors.grey[400],
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

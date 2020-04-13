@@ -294,7 +294,8 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                                   'Einzelwert',
                                   'On/Off Button',
                                   'Graph',
-                                  'Slider'
+                                  'Slider',
+                                  'Tür/Fensterkontakt'
                                 ].map((String value) {
                                   return new DropdownMenuItem<String>(
                                     value: value,
