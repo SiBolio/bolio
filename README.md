@@ -1,3 +1,6 @@
+![alt text](https://github.com/SiBolio/bolio/blob/master/assets/logo.png)
+
+
 # bolio
 
 Bolio ist eine Flutter Anwendung welche mit deinem ioBroker verbunden werden kann.
