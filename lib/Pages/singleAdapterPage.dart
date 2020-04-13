@@ -149,19 +149,21 @@ class _ObjectListTileState extends State<ObjectListTile> {
           _isFavorite ? Icons.star : Icons.star_border,
         ),
         onPressed: () {
-          setState(() {
-            _isFavorite = !_isFavorite;
-            _isFavorite
-                ? saveService.addObjectToFavorites(widget.object, context)
-                : saveService.removeObjectFromFavorites(
-                    widget.object.id, context);
-            String snackBarText =
-                _isFavorite ? 'Favorit hinzugefügt' : 'Favorit entfernt';
-            final snackBar = SnackBar(
-              content: Text(snackBarText),
-            );
-            Scaffold.of(context).showSnackBar(snackBar);
-          });
+          setState(
+            () {
+              _isFavorite = !_isFavorite;
+              _isFavorite
+                  ? saveService.addObjectToFavorites(widget.object, context)
+                  : saveService.removeObjectFromFavorites(
+                      widget.object.id, context);
+              String snackBarText =
+                  _isFavorite ? 'Favorit hinzugefügt' : 'Favorit entfernt';
+              final snackBar = SnackBar(
+                content: Text(snackBarText),
+              );
+              Scaffold.of(context).showSnackBar(snackBar);
+            },
+          );
         },
       ),
     );

@@ -7,11 +7,19 @@ import 'package:smarthome/Models/objectsModel.dart';
 class FavoriteService {
   addObjectToFavorites(ObjectsModel object, context) async {
     List<FavoriteModel> favorites = await getFavorites(context);
+
+    var objectType;
+    if (object.type == 'boolean') {
+      objectType = 'On/Off Button';
+    } else {
+      objectType = 'Einzelwert';
+    }
+
     FavoriteModel favorite = new FavoriteModel(
         id: object.id,
         title: object.name,
         tileSize: 'S',
-        objectType: 'Einzelwert');
+        objectType: objectType);
     favorites.add(favorite);
     var prefs = await SharedPreferences.getInstance();
     prefs.setString('favorites', jsonEncode(_encodeFavorites(favorites)));
@@ -55,16 +63,30 @@ class FavoriteService {
     prefs.setString('favorites', jsonEncode(_encodeFavorites(favorites)));
   }
 
-  updateFavorite(String id, String title, String tileSize, String objectType,
-      context) async {
+  updateFavorite(String id, String title, String tileSize, String objectType, String timeSpan,
+      context ) async {
     List<FavoriteModel> favorites = await getFavorites(context);
     for (var favorite in favorites) {
       if (favorite.id == id) {
         favorite.setTitle(title);
         favorite.setTileSize(tileSize);
         favorite.setObjectType(objectType);
+        favorite.setTimeSpan(timeSpan);
       }
     }
+    var prefs = await SharedPreferences.getInstance();
+    prefs.setString('favorites', jsonEncode(_encodeFavorites(favorites)));
+  }
+
+  reorderFavorites(oldIndex, newIndex, context) async {
+    List<FavoriteModel> favorites = await getFavorites(context);
+
+    if (newIndex > oldIndex) {
+      newIndex -= 1;
+    }
+    var tempItem = favorites.removeAt(oldIndex);
+    favorites.insert(newIndex, tempItem);
+
     var prefs = await SharedPreferences.getInstance();
     prefs.setString('favorites', jsonEncode(_encodeFavorites(favorites)));
   }

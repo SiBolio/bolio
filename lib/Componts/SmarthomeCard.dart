@@ -7,8 +7,9 @@ class SmarthomeCard extends StatefulWidget {
   final String title;
   final String objectType;
   final String tileSize;
+  final String timeSpan;
 
-  SmarthomeCard({this.id, this.title, this.objectType, this.tileSize});
+  SmarthomeCard({this.id, this.title, this.objectType, this.tileSize, this.timeSpan});
 
   @override
   _SmarthomeCardState createState() => _SmarthomeCardState();
@@ -127,7 +128,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
               ],
             ),
             FutureBuilder(
-              future: http.getHistory(widget.id),
+              future: http.getHistory(widget.id, widget.timeSpan),
               builder: (BuildContext context, AsyncSnapshot snapshot) {
                 if (snapshot.hasData) {
                   if (widget.tileSize == 'L') {

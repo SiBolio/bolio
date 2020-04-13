@@ -8,18 +8,20 @@ import 'package:smarthome/Models/historyModel.dart';
 import 'package:smarthome/Models/objectsModel.dart';
 import 'package:smarthome/Services/favoriteService.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:smarthome/Services/settingsService.dart';
 
 class HttpService {
   FavoriteService favoriteService = new FavoriteService();
-
+  SettingsService settingsService = new SettingsService();
   List<AdapterModel> _getAllAdapters = new List();
 
   Future<List> getAllAdapters() async {
     if (_getAllAdapters.length > 0) {
       return _getAllAdapters;
     } else {
+      var ipPort = await settingsService.getIpAddress_Port();
       var response = await http
-          .get("http://192.168.178.122:8087/objects?type=adapter&prettyPrint");
+          .get("http://" + ipPort + "/objects?type=adapter&prettyPrint");
 
       Map<String, dynamic> parsedJson = json.decode(response.body);
       List<AdapterModel> responseList = new List();
@@ -34,17 +36,30 @@ class HttpService {
   }
 
   Future<List<charts.Series<HistoryModel, DateTime>>> getHistory(
-      String objectId) async {
+      String objectId, String timeSpan) async {
     List<HistoryModel> historyList = new List();
 
     var now = new DateTime.now();
-    var yesterday =
-        new DateTime(now.year, now.month, now.day - 1, now.hour, now.minute);
+    var from;
+    if (timeSpan == '24 Stunden') {
+      from =
+          new DateTime(now.year, now.month, now.day - 1, now.hour, now.minute);
+    } else if (timeSpan == '7 Tage') {
+      from =
+          new DateTime(now.year, now.month, now.day - 7, now.hour, now.minute);
+    } else if (timeSpan == '30 Tage') {
+      from =
+          new DateTime(now.year, now.month - 1, now.day, now.hour, now.minute);
+    }
 
-    var response = await http.get("http://192.168.178.122:8087/query/" +
+    var ipPort = await settingsService.getIpAddress_Port();
+
+    var response = await http.get("http://" +
+        ipPort +
+        "/query/" +
         objectId +
         "/?prettyPrint&dateFrom=" +
-        yesterday.toString() +
+        from.toString() +
         "&dateTo=" +
         now.toString());
 
@@ -77,10 +92,13 @@ class HttpService {
   Future<List> getAdapterObjects(String adapterId, context) async {
     List<FavoriteModel> _favorites =
         await favoriteService.getFavorites(context);
-    var response = await http.get(
-        "http://192.168.178.122:8087/objects?pattern=" +
-            adapterId +
-            "*&type=state&prettyPrint");
+
+    var ipPort = await settingsService.getIpAddress_Port();
+    var response = await http.get("http://" +
+        ipPort +
+        "/objects?pattern=" +
+        adapterId +
+        "*&type=state&prettyPrint");
 
     Map<String, dynamic> parsedJson = json.decode(response.body);
     List<ObjectsModel> responseList = new List();
@@ -99,8 +117,8 @@ class HttpService {
   }
 
   Future<String> getObjectValue(String objectId) async {
-    var response =
-        await http.get("http://192.168.178.122:8087/get/" + objectId);
+    var ipPort = await settingsService.getIpAddress_Port();
+    var response = await http.get("http://" + ipPort + "/get/" + objectId);
     Map<String, dynamic> parsedJson = json.decode(response.body);
     if (parsedJson['val'] != null) {
       return parsedJson['val'].toString();
@@ -109,7 +127,8 @@ class HttpService {
     }
   }
 
-  setObjectValue(String objectId, String value) {
-    http.get("http://192.168.178.122:8087/set/" + objectId + "?value=" + value);
+  setObjectValue(String objectId, String value) async {
+    var ipPort = await settingsService.getIpAddress_Port();
+    http.get("http://" + ipPort + "/set/" + objectId + "?value=" + value);
   }
 }
