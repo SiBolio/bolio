@@ -63,8 +63,11 @@ class FavoriteService {
     prefs.setString('favorites', jsonEncode(_encodeFavorites(favorites)));
   }
 
-  updateFavorite(String id, String title, String tileSize, String objectType, String timeSpan,
-      context ) async {
+  updateFavorite(String id, String title, String tileSize, String objectType,
+      String timeSpan, context) async {
+    if (timeSpan == null) {
+      timeSpan = '24 Stunden';
+    }
     List<FavoriteModel> favorites = await getFavorites(context);
     for (var favorite in favorites) {
       if (favorite.id == id) {

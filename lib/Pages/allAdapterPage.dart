@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smarthome/Models/adapterModel.dart';
 import 'package:smarthome/Models/favoriteModel.dart';
 import 'package:smarthome/Pages/singleAdapterPage.dart';
+import 'package:smarthome/Pages/start.dart';
 import 'package:smarthome/Services/favoriteService.dart';
 import 'package:smarthome/Services/httpService.dart';
 import 'package:smarthome/Services/settingsService.dart';
@@ -40,10 +41,19 @@ class _AllAdapterPageState extends State<AllAdapterPage>
   @override
   Widget build(BuildContext context) {
     List<FavoriteModel> objects;
-
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
+        leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => StartPage()),
+              ).then((value) {
+                setState(() {});
+              });
+            }),
         title: const Text('Einstellungen'),
         bottom: TabBar(
           controller: _tabController,
@@ -275,7 +285,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                         Padding(
                           padding: const EdgeInsets.only(top: 15.0),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween ,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text('Objekttyp: '),
                               DropdownButton<String>(
@@ -367,7 +377,13 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                               );
                             },
                           );
-                          Navigator.of(context).pop();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => AllAdapterPage()),
+                          ).then((value) {
+                            setState(() {});
+                          });
                         },
                       ),
                     ],
