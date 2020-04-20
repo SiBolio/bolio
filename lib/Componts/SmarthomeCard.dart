@@ -152,17 +152,18 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
               future: http.getHistory(widget.id, widget.timeSpan),
               builder: (BuildContext context, AsyncSnapshot snapshot) {
                 if (snapshot.hasData) {
-                  if (widget.tileSize == 'L') {
-                    return Flexible(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Flexible(
-                            flex: 7,
-                            child: LineGraph(snapshot.data),
-                          ),
-                          Flexible(
+                  return Flexible(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          flex: 7,
+                          child: LineGraph(snapshot.data),
+                        ),
+                        Visibility(
+                          visible: _isValueVisibleInGraphTile(widget.tileSize),
+                          child: Flexible(
                             flex: 3,
                             child: FutureBuilder(
                               future: http.getObjectValue(widget.id),
@@ -185,14 +186,10 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                               },
                             ),
                           ),
-                        ],
-                      ),
-                    );
-                  } else {
-                    return Flexible(
-                      child: LineGraph(snapshot.data),
-                    );
-                  }
+                        ),
+                      ],
+                    ),
+                  );
                 } else {
                   return CircularProgressIndicator();
                 }
@@ -210,6 +207,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
     return Card(
       color: Colors.grey[900],
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(10.0),
@@ -264,6 +262,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                 borderRadius: BorderRadius.circular(4.0)),
         color: Colors.grey[900],
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Padding(
@@ -319,5 +318,15 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
         ],
       ),
     );
+  }
+
+  _isValueVisibleInGraphTile(String tileSize) {
+    bool _isVisible = true;
+    if (tileSize == 'S') {
+      if (MediaQuery.of(context).size.width < 700) {
+        _isVisible = false;
+      }
+    }
+    return _isVisible;
   }
 }

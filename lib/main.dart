@@ -1,7 +1,12 @@
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:smarthome/Pages/start.dart';
 
-void main() => runApp(Smarthome());
+void main() {
+  debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
+  runApp(Smarthome());
+}
 
 class Smarthome extends StatelessWidget {
   @override
