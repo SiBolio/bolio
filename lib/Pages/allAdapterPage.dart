@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:package_info/package_info.dart';
 import 'package:smarthome/Models/adapterModel.dart';
 import 'package:smarthome/Models/favoriteModel.dart';
 import 'package:smarthome/Pages/singleAdapterPage.dart';
@@ -6,6 +8,7 @@ import 'package:smarthome/Pages/start.dart';
 import 'package:smarthome/Services/favoriteService.dart';
 import 'package:smarthome/Services/httpService.dart';
 import 'package:smarthome/Services/settingsService.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 HttpService httpService = new HttpService();
 FavoriteService favoriteService = new FavoriteService();
@@ -81,6 +84,34 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                       padding: const EdgeInsets.all(8.0),
                       child: Column(
                         children: [
+                          Image(
+                            image: AssetImage('assets/logo.png'),
+                            height: 50,
+                          ),
+                          FutureBuilder<String>(
+                            future: _getVersion(),
+                            builder: (BuildContext context,
+                                AsyncSnapshot<String> snapshot) {
+                              if (snapshot.hasData) {
+                                return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'Version ' + snapshot.data,
+                                    style: new TextStyle(
+                                      fontSize: 20.0,
+                                    ),
+                                  ),
+                                );
+                              } else if (snapshot.hasError) {
+                                return Text(
+                                    'Version konnte nicht geladen werden');
+                              } else {
+                                return Container(
+                                    color: Colors.white // This is optional
+                                    );
+                              }
+                            },
+                          ),
                           TextFormField(
                             controller: ipController,
                             decoration:
@@ -108,6 +139,22 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                                   },
                                 );
                               },
+                            ),
+                          ),
+                          Expanded(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Linkify(
+                                    onOpen: _onOpen,
+                                    text:
+                                        "Icons erstellt von Freepik ( https://www.flaticon.com/de/autoren/freepik ) from https://www.flaticon.com",
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -413,5 +460,18 @@ class _AllAdapterPageState extends State<AllAdapterPage>
       listTiles.add(tile);
     }
     return listTiles;
+  }
+
+  Future<String> _getVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    return packageInfo.version;
+  }
+
+  Future<void> _onOpen(LinkableElement link) async {
+    if (await canLaunch(link.url)) {
+      await launch(link.url);
+    } else {
+      throw 'Could not launch $link';
+    }
   }
 }

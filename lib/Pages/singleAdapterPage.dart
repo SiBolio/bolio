@@ -20,12 +20,42 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
   bool _isSearching = false;
   String searchQuery = "";
 
+  String _currentlySelected = "Alle";
+  final List<String> _dropdownValues = [
+    "Alle",
+    "On/Off",
+    "Zahl",
+    "Wert",
+    "Text",
+    "Objekt"
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         title: _isSearching ? _buildSearchField() : Text(widget.title),
+        actions: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: DropdownButton(
+              items: _dropdownValues
+                  .map((value) => DropdownMenuItem(
+                        child: Text(value),
+                        value: value,
+                      ))
+                  .toList(),
+              onChanged: (String value) {
+                setState(() {
+                  _currentlySelected = value;
+                });
+              },
+              isExpanded: false,
+              value: _currentlySelected,
+            ),
+          )
+        ],
       ),
       body: Center(
         child: FutureBuilder(
@@ -42,6 +72,11 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
               if (_isSearching && this.searchQuery.length > 1) {
                 objects = queryObjects(objects);
               }
+
+              if (_currentlySelected != 'Alle') {
+                objects = filterObjects(objects);
+              }
+
               return ListView.builder(
                 itemCount: objects.length,
                 itemBuilder: (context, index) {
@@ -98,6 +133,16 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
     }
     return returnList;
   }
+
+  List<ObjectsModel> filterObjects(List<ObjectsModel> queryObjects) {
+    List<ObjectsModel> returnList = new List();
+    for (var object in queryObjects) {
+      if (object.typeReadable == _currentlySelected) {
+        returnList.add(object);
+      }
+    }
+    return returnList;
+  }
 }
 
 class ObjectListTile extends StatefulWidget {
@@ -131,8 +176,39 @@ class _ObjectListTileState extends State<ObjectListTile> {
           builder: (BuildContext context) {
             return AlertDialog(
               title: Text(widget.object.name),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text('Objekttype: ' + widget.object.typeReadable),
+                  ),
+                  FutureBuilder(
+                    future: httpService.getObjectValue(widget.object.id),
+                    builder:
+                        (BuildContext context, AsyncSnapshot<String> snapshot) {
+                      if (snapshot.hasData) {
+                        return Center(
+                          child: Text(
+                            snapshot.data,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 38,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        );
+                      } else {
+                        return CircularProgressIndicator();
+                      }
+                    },
+                  ),
+                ],
+              ),
               actions: <Widget>[
                 FlatButton(
+                  color: Theme.of(context).accentColor,
+                  textColor: Colors.black,
                   child: Text('Ok'),
                   onPressed: () {
                     Navigator.of(context).pop();

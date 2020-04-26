@@ -170,9 +170,11 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                               builder: (BuildContext context,
                                   AsyncSnapshot<String> snapshot) {
                                 if (snapshot.hasData) {
-                                  return Center(
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 10.0),
                                     child: Text(
                                       snapshot.data,
+                                       overflow: TextOverflow.ellipsis,
                                       textAlign: TextAlign.right,
                                       style: TextStyle(
                                         fontSize: 38,
@@ -323,6 +325,12 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
   _isValueVisibleInGraphTile(String tileSize) {
     bool _isVisible = true;
     if (tileSize == 'S') {
+      if (MediaQuery.of(context).size.width < 700) {
+        _isVisible = false;
+      }
+    }
+    else if (tileSize == 'M') {
+      print(MediaQuery.of(context).size.width);
       if (MediaQuery.of(context).size.width < 700) {
         _isVisible = false;
       }
