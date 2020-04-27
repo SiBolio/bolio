@@ -42,7 +42,7 @@ class _StartPageState extends State<StartPage> {
                         );
                       } else {
                         return StaggeredGridView.countBuilder(
-                          crossAxisCount: 4,
+                          crossAxisCount: _getCrossAxisCount(),
                           itemCount: favorites.length,
                           itemBuilder: (BuildContext context, int index) =>
                               new Container(
@@ -102,9 +102,12 @@ class _StartPageState extends State<StartPage> {
             body: Padding(
               padding: const EdgeInsets.all(12.0),
               child: SafeArea(
-                              child: Column(
+                child: Column(
                   children: [
-                    Image(image: AssetImage('assets/logo.png'), height: 50,),
+                    Image(
+                      image: AssetImage('assets/logo.png'),
+                      height: 50,
+                    ),
                     Padding(
                       padding: const EdgeInsets.only(top: 30),
                       child: Text(
@@ -127,7 +130,8 @@ class _StartPageState extends State<StartPage> {
                       child: RaisedButton(
                         color: Colors.tealAccent,
                         child: const Text('Speichern',
-                            style: TextStyle(fontSize: 20, color: Colors.black)),
+                            style:
+                                TextStyle(fontSize: 20, color: Colors.black)),
                         onPressed: () {
                           setState(
                             () {
@@ -150,5 +154,21 @@ class _StartPageState extends State<StartPage> {
 
   Future<Null> _refreshPage() async {
     setState(() {});
+  }
+
+  _getCrossAxisCount() {
+    int axisCount;
+    double width = MediaQuery.of(context).size.width;
+    print(width);
+    if (width > 1300) {
+      axisCount = 10;
+    } else if (width > 1000) {
+      axisCount = 8;
+    } else if (width > 600) {
+      axisCount = 6;
+    } else {
+      axisCount = 4;
+    }
+    return axisCount;
   }
 }

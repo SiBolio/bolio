@@ -173,48 +173,52 @@ class _ObjectListTileState extends State<ObjectListTile> {
       onTap: () {
         return showDialog<void>(
           context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(widget.object.name),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text('Objekttype: ' + widget.object.typeReadable),
+          builder: (BuildContext dialogContext) {
+            return StatefulBuilder(
+              builder: (context, setState) {
+                return AlertDialog(
+                  title: Text(widget.object.name),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text('Objekttyp: ' + widget.object.typeReadable),
+                      ),
+                      FutureBuilder(
+                        future: httpService.getObjectValue(widget.object.id),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<String> snapshot) {
+                          if (snapshot.hasData) {
+                            return Center(
+                              child: Text(
+                                snapshot.data,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 38,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            );
+                          } else {
+                            return CircularProgressIndicator();
+                          }
+                        },
+                      ),
+                    ],
                   ),
-                  FutureBuilder(
-                    future: httpService.getObjectValue(widget.object.id),
-                    builder:
-                        (BuildContext context, AsyncSnapshot<String> snapshot) {
-                      if (snapshot.hasData) {
-                        return Center(
-                          child: Text(
-                            snapshot.data,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 38,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        );
-                      } else {
-                        return CircularProgressIndicator();
-                      }
-                    },
-                  ),
-                ],
-              ),
-              actions: <Widget>[
-                FlatButton(
-                  color: Theme.of(context).accentColor,
-                  textColor: Colors.black,
-                  child: Text('Ok'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
+                  actions: <Widget>[
+                    FlatButton(
+                      color: Theme.of(context).accentColor,
+                      textColor: Colors.black,
+                      child: Text('Ok'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
             );
           },
         );
