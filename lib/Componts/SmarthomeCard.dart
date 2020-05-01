@@ -8,9 +8,21 @@ class SmarthomeCard extends StatefulWidget {
   final String objectType;
   final String tileSize;
   final String timeSpan;
+  final double sliderMin;
+  final double sliderMax;
+  final int setPointMin;
+  final int setPointMax;
 
   SmarthomeCard(
-      {this.id, this.title, this.objectType, this.tileSize, this.timeSpan});
+      {this.id,
+      this.title,
+      this.objectType,
+      this.tileSize,
+      this.timeSpan,
+      this.sliderMin,
+      this.sliderMax,
+      this.setPointMin,
+      this.setPointMax});
 
   @override
   _SmarthomeCardState createState() => _SmarthomeCardState();
@@ -26,45 +38,47 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
   Widget build(BuildContext context) {
     if (widget.objectType == 'Slider') {
       if (sliderValue == null) {
-        return FutureBuilder(
-          future: http.getObjectValue(widget.id),
-          builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-            if (snapshot.hasData) {
-              sliderValue = double.parse(snapshot.data);
-              return _getSliderCard();
-            } else
-              return CircularProgressIndicator();
-          },
+        return Center(
+          child: FutureBuilder(
+            future: http.getObjectValue(widget.id),
+            builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+              if (snapshot.hasData) {
+                sliderValue = double.parse(snapshot.data);
+                return _getSliderCard();
+              } else
+                return CircularProgressIndicator();
+            },
+          ),
         );
       } else {
         return _getSliderCard();
       }
     } else if (widget.objectType == 'Einzelwert') {
-      return Card(
-        color: Colors.grey[900],
-        child: Column(
-          children: [
-            Flexible(
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Text(
-                  widget.title,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.grey[400],
-                    fontWeight: FontWeight.w400,
+      return FutureBuilder(
+        future: http.getObjectValue(widget.id),
+        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+          if (snapshot.hasData) {
+            return Card(
+              color: _getSetPointColor(
+                  snapshot.data, widget.setPointMin, widget.setPointMax),
+              child: Column(
+                children: [
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Text(
+                        widget.title,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          color: Colors.grey[400],
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
-            Flexible(
-              child: FutureBuilder(
-                future: http.getObjectValue(widget.id),
-                builder:
-                    (BuildContext context, AsyncSnapshot<String> snapshot) {
-                  if (snapshot.hasData) {
-                    return Center(
+                  Flexible(
+                    child: Center(
                       child: Text(
                         snapshot.data,
                         textAlign: TextAlign.center,
@@ -73,15 +87,17 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                           fontWeight: FontWeight.w400,
                         ),
                       ),
-                    );
-                  } else {
-                    return CircularProgressIndicator();
-                  }
-                },
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
+            );
+          } else {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        },
       );
     } else if (widget.objectType == 'On/Off Button') {
       if (switchValue == null) {
@@ -159,7 +175,10 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                       children: [
                         Flexible(
                           flex: 7,
-                          child: LineGraph(snapshot.data),
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 10.0),
+                            child: LineGraph(snapshot.data),
+                          ),
                         ),
                         Visibility(
                           visible: _isValueVisibleInGraphTile(widget.tileSize),
@@ -174,7 +193,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                                     padding: const EdgeInsets.only(right: 10.0),
                                     child: Text(
                                       snapshot.data,
-                                       overflow: TextOverflow.ellipsis,
+                                      overflow: TextOverflow.ellipsis,
                                       textAlign: TextAlign.right,
                                       style: TextStyle(
                                         fontSize: 38,
@@ -206,6 +225,16 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
   }
 
   Widget _getSliderCard() {
+    double _min = 0;
+    double _max = 100;
+
+    if (widget.sliderMin != null) {
+      _min = widget.sliderMin;
+    }
+    if (widget.sliderMax != null) {
+      _max = widget.sliderMax;
+    }
+
     return Card(
       color: Colors.grey[900],
       child: Column(
@@ -224,8 +253,8 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
           ),
           Slider(
             activeColor: Colors.tealAccent,
-            min: 0,
-            max: 100,
+            min: _min,
+            max: _max,
             value: sliderValue,
             divisions: 10,
             inactiveColor: Colors.transparent,
@@ -328,13 +357,25 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
       if (MediaQuery.of(context).size.width < 700) {
         _isVisible = false;
       }
-    }
-    else if (tileSize == 'M') {
-      print(MediaQuery.of(context).size.width);
+    } else if (tileSize == 'M') {
       if (MediaQuery.of(context).size.width < 700) {
         _isVisible = false;
       }
     }
     return _isVisible;
+  }
+
+  _getSetPointColor(String value, int min, int max) {
+    if (min != null) {
+      if (double.parse(value) < min) {
+        return Colors.red[900];
+      }
+    }
+    if (max != null) {
+      if (double.parse(value) > max) {
+        return Colors.redAccent[700];
+      }
+    }
+    return Colors.grey[900];
   }
 }

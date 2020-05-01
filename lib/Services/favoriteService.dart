@@ -64,7 +64,7 @@ class FavoriteService {
   }
 
   updateFavorite(String id, String title, String tileSize, String objectType,
-      String timeSpan, context) async {
+      String timeSpan, String setPointMin, String setPointMax, context) async {
     if (timeSpan == null) {
       timeSpan = '24 Stunden';
     }
@@ -75,6 +75,8 @@ class FavoriteService {
         favorite.setTileSize(tileSize);
         favorite.setObjectType(objectType);
         favorite.setTimeSpan(timeSpan);
+        favorite.setSetPointMin(setPointMin);
+        favorite.setSetPointMax(setPointMax);
       }
     }
     var prefs = await SharedPreferences.getInstance();

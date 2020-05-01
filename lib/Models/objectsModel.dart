@@ -4,9 +4,18 @@ class ObjectsModel {
   final String typeReadable;
   final String name;
   final String desc;
+  final double sliderMin;
+  final double sliderMax;
   bool isfavorite;
 
-  ObjectsModel({this.id, this.type, this.name, this.desc, this.typeReadable});
+  ObjectsModel(
+      {this.id,
+      this.type,
+      this.name,
+      this.desc,
+      this.typeReadable,
+      this.sliderMin,
+      this.sliderMax});
 
   factory ObjectsModel.fromJson(_json) {
     String _desc = '';
@@ -52,12 +61,24 @@ class ObjectsModel {
         }
     }
 
+    double _sliderMin = 0;
+    if (_json['common']['min'] != null) {
+      _sliderMin = _json['common']['min'].toDouble();
+    }
+
+    double _sliderMax = 0;
+    if (_json['common']['max'] != null) {
+      _sliderMax = _json['common']['max'].toDouble();
+    }
+
     return ObjectsModel(
       id: _json['_id'],
       type: _json['common']['type'],
       typeReadable: _typeReadable,
       name: _json['common']['name'],
       desc: _desc,
+      sliderMin: _sliderMin,
+      sliderMax: _sliderMax,
     );
   }
 }

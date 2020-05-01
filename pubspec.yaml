@@ -1,7 +1,6 @@
 name: smarthome
-description: A new Flutter project.
 
-version: 0.2.0
+version: 0.2.2
 
 environment:
   sdk: ">=2.2.2 <3.0.0"
@@ -17,6 +16,8 @@ dependencies:
   package_info: ^0.4.0+17
   flutter_linkify: ^3.1.2
   url_launcher: ^5.4.5
+  local_auth: ^0.6.2+1
+
 
 
 

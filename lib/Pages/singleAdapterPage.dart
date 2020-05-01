@@ -193,6 +193,7 @@ class _ObjectListTileState extends State<ObjectListTile> {
                             return Center(
                               child: Text(
                                 snapshot.data,
+                                overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 38,
@@ -223,6 +224,7 @@ class _ObjectListTileState extends State<ObjectListTile> {
           },
         );
       },
+      leading: _getItemIcon(widget.object.type),
       trailing: IconButton(
         color: _isFavorite ? Theme.of(context).accentColor : null,
         icon: Icon(
@@ -242,10 +244,52 @@ class _ObjectListTileState extends State<ObjectListTile> {
                 content: Text(snackBarText),
               );
               Scaffold.of(context).showSnackBar(snackBar);
+
+
+              
             },
           );
         },
       ),
     );
+  }
+
+  Icon _getItemIcon(String type) {
+    Icon returnIcon;
+
+    switch (type) {
+      case 'boolean':
+        {
+          returnIcon = Icon(Icons.power_settings_new);
+          break;
+        }
+      case 'number':
+        {
+          returnIcon = Icon(Icons.looks_one);
+          break;
+        }
+      case 'value':
+        {
+          returnIcon = Icon(Icons.data_usage);
+          break;
+        }
+      case 'string':
+        {
+          returnIcon = Icon(Icons.format_quote);
+          break;
+        }
+      case 'object':
+        {
+          returnIcon = Icon(Icons.extension);
+          break;
+        }
+      default:
+        {
+          returnIcon = Icon(Icons.device_unknown);
+          break;
+        }
+    }
+
+    return returnIcon;
   }
 }
