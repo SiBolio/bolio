@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smarthome/Models/ipAddressModel.dart';
 
 class SettingsService {
   Future<String> getIpAddress() async {
@@ -11,21 +12,36 @@ class SettingsService {
     prefs.setString('ipAddress', ipAddress);
   }
 
-  getPort() async {
+  getSimpleAPIPort() async {
     var prefs = await SharedPreferences.getInstance();
     return prefs.getString('port');
   }
 
-  setPort(port) async {
+  getSocketIOPort() async {
+    var prefs = await SharedPreferences.getInstance();
+    return prefs.getString('port_socketio');
+  }
+
+  setPortSimpleAPI(port) async {
     var prefs = await SharedPreferences.getInstance();
     prefs.setString('port', port);
   }
 
-  Future<String> getIpAddress_Port() async {
+  setPortSocketIO(port) async {
+    var prefs = await SharedPreferences.getInstance();
+    prefs.setString('port_socketio', port);
+  }
+
+  Future<IpAddressModel> getIpAddressPort() async {
     var ipAddress = await getIpAddress();
-    var port = await getPort();
-    if (ipAddress != null && port != null) {
-      return ipAddress + ':' + port;
+    var portSimpleAPI = await getSimpleAPIPort();
+    var portSocketIO = await getSocketIOPort();
+
+    if (ipAddress != null && portSimpleAPI != null && portSocketIO != null) {
+      return new IpAddressModel(
+          ipAddress: ipAddress,
+          portSimpleAPI: portSimpleAPI,
+          portSocketIO: portSocketIO);
     } else {
       return null;
     }

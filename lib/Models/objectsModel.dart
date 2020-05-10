@@ -63,12 +63,20 @@ class ObjectsModel {
 
     double _sliderMin = 0;
     if (_json['common']['min'] != null) {
-      _sliderMin = _json['common']['min'].toDouble();
+      if (_json['common']['min'] is String) {
+        _sliderMin = double.parse(_json['common']['min']);
+      } else {
+        _sliderMin = _json['common']['min'].toDouble();
+      }
     }
 
     double _sliderMax = 0;
     if (_json['common']['max'] != null) {
-      _sliderMax = _json['common']['max'].toDouble();
+      if (_json['common']['min'] is String) {
+        _sliderMax = double.parse(_json['common']['max']);
+      } else {
+        _sliderMax = _json['common']['max'].toDouble();
+      }
     }
 
     return ObjectsModel(

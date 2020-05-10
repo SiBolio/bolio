@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:smarthome/Services/colorsService.dart';
 import 'package:smarthome/Services/httpService.dart';
+import 'package:smarthome/Services/socketService.dart';
 import 'lineGraph.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class SmarthomeCard extends StatefulWidget {
   final String id;
@@ -10,57 +13,74 @@ class SmarthomeCard extends StatefulWidget {
   final String timeSpan;
   final double sliderMin;
   final double sliderMax;
-  final int setPointMin;
-  final int setPointMax;
+  final double setPointMin;
+  final double setPointMax;
+  final IO.Socket socket;
 
-  SmarthomeCard(
-      {this.id,
-      this.title,
-      this.objectType,
-      this.tileSize,
-      this.timeSpan,
-      this.sliderMin,
-      this.sliderMax,
-      this.setPointMin,
-      this.setPointMax});
+  SmarthomeCard({
+    this.id,
+    this.title,
+    this.objectType,
+    this.tileSize,
+    this.timeSpan,
+    this.sliderMin,
+    this.sliderMax,
+    this.setPointMin,
+    this.setPointMax,
+    this.socket,
+  });
+
+  SocketService socketSrv;
 
   @override
   _SmarthomeCardState createState() => _SmarthomeCardState();
 }
 
 class _SmarthomeCardState extends State<SmarthomeCard> {
-  HttpService http = new HttpService();
+  HttpService http;
 
-  bool switchValue;
-  double sliderValue;
+  @override
+  void initState() {
+    http = new HttpService();
+    widget.socketSrv =
+        new SocketService(socket: widget.socket, favoriteId: widget.id);
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     if (widget.objectType == 'Slider') {
-      if (sliderValue == null) {
-        return Center(
-          child: FutureBuilder(
-            future: http.getObjectValue(widget.id),
-            builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-              if (snapshot.hasData) {
-                sliderValue = double.parse(snapshot.data);
-                return _getSliderCard();
-              } else
-                return CircularProgressIndicator();
-            },
-          ),
-        );
-      } else {
-        return _getSliderCard();
-      }
+      widget.socketSrv
+          .getObjectValue(widget.id, widget.setPointMin, widget.setPointMax);
+
+      return Center(
+        child: StreamBuilder(
+          stream: widget.socketSrv.streamController.stream,
+          builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+            if (snapshot.hasData) {
+              return _getSliderCard(double.parse(snapshot.data));
+            } else
+              return CircularProgressIndicator();
+          },
+        ),
+      );
     } else if (widget.objectType == 'Einzelwert') {
-      return FutureBuilder(
-        future: http.getObjectValue(widget.id),
+      widget.socketSrv
+          .getObjectValue(widget.id, widget.setPointMin, widget.setPointMax);
+      return StreamBuilder(
+        stream: widget.socketSrv.streamController.stream,
         builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
           if (snapshot.hasData) {
             return Card(
-              color: _getSetPointColor(
-                  snapshot.data, widget.setPointMin, widget.setPointMax),
+              shape: RoundedRectangleBorder(
+                side: new BorderSide(
+                    color: _getSetPointColorLineGraph(
+                        snapshot.data, widget.setPointMin, widget.setPointMax),
+                    width: 1.0),
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              color: BolioColors.surfaceCard,
               child: Column(
                 children: [
                   Flexible(
@@ -71,7 +91,8 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 16.0,
-                          color: Colors.grey[400],
+                          color: _getSetPointColorFont(snapshot.data,
+                              widget.setPointMin, widget.setPointMax),
                           fontWeight: FontWeight.w400,
                         ),
                       ),
@@ -100,123 +121,118 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
         },
       );
     } else if (widget.objectType == 'On/Off Button') {
-      if (switchValue == null) {
-        return FutureBuilder(
-          future: http.getObjectValue(widget.id),
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
-            if (snapshot.hasData) {
-              if (snapshot.data == 'true') {
-                switchValue = true;
-              } else {
-                switchValue = false;
-              }
-              return _getOnOffCard();
-            } else {
-              return Text('-');
-            }
-          },
-        );
-      } else {
-        return _getOnOffCard();
-      }
+      widget.socketSrv
+          .getObjectValue(widget.id, widget.setPointMin, widget.setPointMax);
+      return StreamBuilder(
+        stream: widget.socketSrv.streamController.stream,
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.hasData) {
+            return _getOnOffCard(snapshot.data);
+          } else {
+            return Text('-');
+          }
+        },
+      );
     } else if (widget.objectType == 'Tür/Fensterkontakt') {
-      if (switchValue == null) {
-        return FutureBuilder(
-          future: http.getObjectValue(widget.id),
+      widget.socketSrv
+          .getObjectValue(widget.id, widget.setPointMin, widget.setPointMax);
+      return StreamBuilder(
+        stream: widget.socketSrv.streamController.stream,
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.hasData) {
+            return _getContactCard(snapshot.data);
+          } else {
+            return Text('-');
+          }
+        },
+      );
+    } else if (widget.objectType == 'Graph') {
+      widget.socketSrv
+          .getObjectValue(widget.id, widget.setPointMin, widget.setPointMax);
+      return Center(
+        child: FutureBuilder(
+          future: http.getHistory(widget.id, widget.timeSpan,
+              widget.setPointMin, widget.setPointMax),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
-              if (snapshot.data == 'true') {
-                switchValue = true;
-              } else {
-                switchValue = false;
-              }
-              return _getContactCard();
-            } else {
-              return Text('-');
-            }
-          },
-        );
-      } else {
-        return _getOnOffCard();
-      }
-    } else if (widget.objectType == 'Graph') {
-      return Card(
-        color: Colors.grey[900],
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Flexible(
-                  child: Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Text(
-                      widget.title,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 16.0,
-                        color: Colors.grey[400],
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            FutureBuilder(
-              future: http.getHistory(widget.id, widget.timeSpan),
-              builder: (BuildContext context, AsyncSnapshot snapshot) {
-                if (snapshot.hasData) {
-                  return Flexible(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+              return Card(
+                color: BolioColors.surfaceCard,
+                child: Column(
+                  children: [
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Flexible(
-                          flex: 7,
                           child: Padding(
-                            padding: const EdgeInsets.only(left: 10.0),
-                            child: LineGraph(snapshot.data),
-                          ),
-                        ),
-                        Visibility(
-                          visible: _isValueVisibleInGraphTile(widget.tileSize),
-                          child: Flexible(
-                            flex: 3,
-                            child: FutureBuilder(
-                              future: http.getObjectValue(widget.id),
-                              builder: (BuildContext context,
-                                  AsyncSnapshot<String> snapshot) {
-                                if (snapshot.hasData) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(right: 10.0),
-                                    child: Text(
-                                      snapshot.data,
-                                      overflow: TextOverflow.ellipsis,
-                                      textAlign: TextAlign.right,
-                                      style: TextStyle(
-                                        fontSize: 38,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                  );
-                                } else {
-                                  return CircularProgressIndicator();
-                                }
-                              },
+                            padding: const EdgeInsets.all(10.0),
+                            child: Text(
+                              widget.title,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 16.0,
+                                color: Colors.grey[400],
+                                fontWeight: FontWeight.w400,
+                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                  );
-                } else {
-                  return CircularProgressIndicator();
-                }
-              },
-            ),
-          ],
+                    Flexible(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            flex: 7,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 10.0),
+                              child: LineGraph(snapshot.data),
+                            ),
+                          ),
+                          Visibility(
+                            visible:
+                                _isValueVisibleInGraphTile(widget.tileSize),
+                            child: Flexible(
+                              flex: 3,
+                              child: StreamBuilder(
+                                stream:
+                                    widget.socketSrv.streamController.stream,
+                                builder: (BuildContext context,
+                                    AsyncSnapshot<String> socketSnapshot) {
+                                  if (socketSnapshot.hasData) {
+                                    return Padding(
+                                      padding:
+                                          const EdgeInsets.only(right: 10.0),
+                                      child: Text(
+                                        socketSnapshot.data,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.right,
+                                        style: TextStyle(
+                                          fontSize: 38,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    return CircularProgressIndicator();
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return CircularProgressIndicator();
+            }
+          },
         ),
       );
     } else {
@@ -224,7 +240,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
     }
   }
 
-  Widget _getSliderCard() {
+  Widget _getSliderCard(double sliderValue) {
     double _min = 0;
     double _max = 100;
 
@@ -236,7 +252,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
     }
 
     return Card(
-      color: Colors.grey[900],
+      color: BolioColors.surfaceCard,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -252,7 +268,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
             ),
           ),
           Slider(
-            activeColor: Colors.tealAccent,
+            activeColor: BolioColors.primary,
             min: _min,
             max: _max,
             value: sliderValue,
@@ -272,26 +288,33 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
     );
   }
 
-  Widget _getOnOffCard() {
+  Widget _getOnOffCard(String _switchValue) {
+    String _valueToSet;
+    bool _clicked = false;
+    if (_switchValue == 'true') {
+      _valueToSet = 'false';
+    } else {
+      _valueToSet = 'true';
+    }
     return GestureDetector(
       onTap: () {
         setState(
           () {
-            switchValue = !switchValue;
-            http.setObjectValue(widget.id, switchValue.toString());
+            _clicked = true;
+            http.setObjectValue(widget.id, _valueToSet);
           },
         );
       },
       child: Card(
-        shape: switchValue
+        shape: _switchValue == 'true'
             ? new RoundedRectangleBorder(
-                side: new BorderSide(color: Colors.tealAccent, width: 1.0),
+                side: new BorderSide(color: BolioColors.primary, width: 1.0),
                 borderRadius: BorderRadius.circular(4.0),
               )
             : new RoundedRectangleBorder(
-                side: new BorderSide(color: Colors.grey, width: 1.0),
+                side: new BorderSide(color: Colors.grey[800], width: 1.0),
                 borderRadius: BorderRadius.circular(4.0)),
-        color: Colors.grey[900],
+        color: BolioColors.surfaceCard,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -300,7 +323,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
               padding: const EdgeInsets.all(8.0),
               child: Icon(
                 Icons.power_settings_new,
-                color: switchValue ? Colors.white : Colors.grey,
+                color: _switchValue == 'true' ? Colors.white : Colors.grey,
                 size: 44.0,
               ),
             ),
@@ -321,16 +344,16 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
     );
   }
 
-  Widget _getContactCard() {
+  Widget _getContactCard(String _switchValue) {
     return Card(
-      color: Colors.grey[900],
+      color: BolioColors.surfaceCard,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Icon(
-              switchValue ? Icons.lock_open : Icons.lock,
+              _switchValue == 'true' ? Icons.lock_open : Icons.lock,
               color: Colors.grey,
               size: 44.0,
             ),
@@ -354,9 +377,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
   _isValueVisibleInGraphTile(String tileSize) {
     bool _isVisible = true;
     if (tileSize == 'S') {
-      if (MediaQuery.of(context).size.width < 700) {
-        _isVisible = false;
-      }
+      _isVisible = false;
     } else if (tileSize == 'M') {
       if (MediaQuery.of(context).size.width < 700) {
         _isVisible = false;
@@ -365,17 +386,59 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
     return _isVisible;
   }
 
-  _getSetPointColor(String value, int min, int max) {
+  _getSetPointColorBackground(String value, double min, double max) {
     if (min != null) {
       if (double.parse(value) < min) {
-        return Colors.red[900];
+        return BolioColors.dangerCard;
       }
     }
     if (max != null) {
       if (double.parse(value) > max) {
-        return Colors.redAccent[700];
+        return BolioColors.dangerCard;
       }
     }
-    return Colors.grey[900];
+    return BolioColors.surfaceCard;
+  }
+
+  _getSetPointColorFont(String value, double min, double max) {
+    if (min != null) {
+      if (double.parse(value) < min) {
+        return Colors.white;
+      }
+    }
+    if (max != null) {
+      if (double.parse(value) > max) {
+        return Colors.white;
+      }
+    }
+    return Colors.grey[400];
+  }
+
+  _getSetPointColorFontGraph(String value, double min, double max) {
+    if (min != null) {
+      if (double.parse(value) < min) {
+        return BolioColors.dangerLine;
+      }
+    }
+    if (max != null) {
+      if (double.parse(value) > max) {
+        return BolioColors.dangerLine;
+      }
+    }
+    return Colors.white;
+  }
+
+  _getSetPointColorLineGraph(String value, double min, double max) {
+    if (min != null) {
+      if (double.parse(value) < min) {
+        return BolioColors.dangerLine;
+      }
+    }
+    if (max != null) {
+      if (double.parse(value) > max) {
+        return BolioColors.dangerLine;
+      }
+    }
+    return BolioColors.surfaceCard;
   }
 }

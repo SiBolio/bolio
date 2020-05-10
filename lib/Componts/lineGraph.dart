@@ -1,10 +1,8 @@
 import 'dart:math';
-
-import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:charts_flutter/src/text_element.dart' as textElement;
 import 'package:charts_flutter/src/text_style.dart' as style;
-
 import 'package:charts_flutter/flutter.dart' as charts;
+
 import 'package:charts_flutter/flutter.dart';
 import 'package:flutter/material.dart';
 
@@ -76,7 +74,6 @@ class CustomCircleSymbolRenderer extends charts.CircleSymbolRenderer {
     var textStyle = style.TextStyle();
     textStyle.color = Color.white;
     textStyle.fontSize = 20;
-
     canvas.drawText(textElement.TextElement(this.value, style: textStyle),
         (bounds.left - 10 ).round(), -2 );
   }

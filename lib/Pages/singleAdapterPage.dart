@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smarthome/Models/objectsModel.dart';
 import 'package:smarthome/Services/httpService.dart';
 import 'package:smarthome/Services/favoriteService.dart';
+import 'package:smarthome/Services/iconButtonService.dart';
 
 HttpService httpService = new HttpService();
 
@@ -17,6 +18,7 @@ class SingleAdapterPage extends StatefulWidget {
 
 class _SingleAdapterPageState extends State<SingleAdapterPage> {
   TextEditingController _searchQueryController = TextEditingController();
+
   bool _isSearching = false;
   String searchQuery = "";
 
@@ -33,7 +35,7 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Color(0xFF121212),
       appBar: AppBar(
         title: _isSearching ? _buildSearchField() : Text(widget.title),
         actions: <Widget>[
@@ -77,12 +79,14 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
                 objects = filterObjects(objects);
               }
 
+              List<ObjectsModel> _sortedObjects = _orderAlphabetical(objects);
+
               return ListView.builder(
-                itemCount: objects.length,
+                itemCount: _sortedObjects.length,
                 itemBuilder: (context, index) {
                   return ObjectListTile(
-                    object: objects[index],
-                    isFavorite: objects[index].isfavorite,
+                    object: _sortedObjects[index],
+                    isFavorite: _sortedObjects[index].isfavorite,
                   );
                 },
               );
@@ -143,6 +147,12 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
     }
     return returnList;
   }
+
+  List<ObjectsModel> _orderAlphabetical(List<ObjectsModel> objects) {
+    objects
+        .sort((a, b) => a.name.toUpperCase().compareTo(b.name.toUpperCase()));
+    return objects;
+  }
 }
 
 class ObjectListTile extends StatefulWidget {
@@ -158,6 +168,7 @@ class ObjectListTile extends StatefulWidget {
 class _ObjectListTileState extends State<ObjectListTile> {
   bool _isFavorite;
   FavoriteService saveService = new FavoriteService();
+  IconButtonService _iconButtonSrv = new IconButtonService();
 
   @override
   void initState() {
@@ -224,7 +235,7 @@ class _ObjectListTileState extends State<ObjectListTile> {
           },
         );
       },
-      leading: _getItemIcon(widget.object.type),
+      leading: _iconButtonSrv.getItemIcon(widget.object.type),
       trailing: IconButton(
         color: _isFavorite ? Theme.of(context).accentColor : null,
         icon: Icon(
@@ -244,52 +255,10 @@ class _ObjectListTileState extends State<ObjectListTile> {
                 content: Text(snackBarText),
               );
               Scaffold.of(context).showSnackBar(snackBar);
-
-
-              
             },
           );
         },
       ),
     );
-  }
-
-  Icon _getItemIcon(String type) {
-    Icon returnIcon;
-
-    switch (type) {
-      case 'boolean':
-        {
-          returnIcon = Icon(Icons.power_settings_new);
-          break;
-        }
-      case 'number':
-        {
-          returnIcon = Icon(Icons.looks_one);
-          break;
-        }
-      case 'value':
-        {
-          returnIcon = Icon(Icons.data_usage);
-          break;
-        }
-      case 'string':
-        {
-          returnIcon = Icon(Icons.format_quote);
-          break;
-        }
-      case 'object':
-        {
-          returnIcon = Icon(Icons.extension);
-          break;
-        }
-      default:
-        {
-          returnIcon = Icon(Icons.device_unknown);
-          break;
-        }
-    }
-
-    return returnIcon;
   }
 }

@@ -1,10 +1,8 @@
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:smarthome/Pages/start.dart';
+import 'package:smarthome/Services/colorsService.dart';
 
 void main() {
-  debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
   runApp(Smarthome());
 }
 
@@ -15,8 +13,8 @@ class Smarthome extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Bolio',
       theme: ThemeData(
-        accentColor: Colors.tealAccent,
-        primarySwatch: Colors.teal,
+        primaryColorDark: BolioColors.primary,
+        accentColor: BolioColors.secondary,
         brightness: Brightness.dark,
       ),
       home: StartPage(),

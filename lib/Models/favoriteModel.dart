@@ -6,8 +6,9 @@ class FavoriteModel {
   String timeSpan;
   double sliderMin;
   double sliderMax;
-  int setPointMin;
-  int setPointMax;
+  double setPointMin;
+  double setPointMax;
+  String pageId;
 
   FavoriteModel(
       {this.id,
@@ -18,20 +19,23 @@ class FavoriteModel {
       this.sliderMin,
       this.sliderMax,
       this.setPointMin,
-      this.setPointMax});
+      this.setPointMax,
+      this.pageId});
 
   factory FavoriteModel.fromJson(Map<String, dynamic> json) {
     return FavoriteModel(
-      id: json['id'],
-      title: json['title'],
-      tileSize: json['tileSize'],
-      objectType: json['objectType'],
-      timeSpan: json['timeSpan'],
-      sliderMin: json['sliderMax'],
-      sliderMax: json['sliderMax'],
-      setPointMin: json['setPointMin'],
-      setPointMax: json['setPointMax'],
-    );
+        id: json['id'],
+        title: json['title'],
+        tileSize: json['tileSize'],
+        objectType: json['objectType'],
+        timeSpan: json['timeSpan'],
+        sliderMin: json['sliderMin'],
+        sliderMax: json['sliderMax'],
+        setPointMin:
+            json['setPointMin'] != null ? json['setPointMin'].toDouble() : null,
+        setPointMax:
+            json['setPointMax'] != null ? json['setPointMax'].toDouble() : null,
+        pageId: json['pageId'] != null ? json['pageId'] : null);
   }
 
   Map<String, dynamic> toJson() => {
@@ -44,7 +48,12 @@ class FavoriteModel {
         'sliderMax': sliderMax,
         'setPointMin': setPointMin,
         'setPointMax': setPointMax,
+        'pageId': pageId,
       };
+
+  setPageId(String pageId) {
+    this.pageId = pageId;
+  }
 
   setTitle(String title) {
     this.title = title;
@@ -63,16 +72,16 @@ class FavoriteModel {
   }
 
   setSetPointMin(String setPointMin) {
-    if (setPointMin != '-' && setPointMin != '') {
-      this.setPointMin = int.parse(setPointMin);
+    if (setPointMin != null && setPointMin != '-' && setPointMin != '') {
+      this.setPointMin = double.parse(setPointMin);
     } else {
       this.setPointMin = null;
     }
   }
 
   setSetPointMax(String setPointMax) {
-    if (setPointMax != '-' && setPointMax != '') {
-      this.setPointMax = int.parse(setPointMax);
+    if (setPointMax != null && setPointMax != '-' && setPointMax != '') {
+      this.setPointMax = double.parse(setPointMax);
     } else {
       this.setPointMax = null;
     }
