@@ -9,6 +9,7 @@ class FavoriteModel {
   double setPointMin;
   double setPointMax;
   String pageId;
+  bool secured;
 
   FavoriteModel(
       {this.id,
@@ -20,22 +21,25 @@ class FavoriteModel {
       this.sliderMax,
       this.setPointMin,
       this.setPointMax,
-      this.pageId});
+      this.pageId,
+      this.secured});
 
   factory FavoriteModel.fromJson(Map<String, dynamic> json) {
     return FavoriteModel(
-        id: json['id'],
-        title: json['title'],
-        tileSize: json['tileSize'],
-        objectType: json['objectType'],
-        timeSpan: json['timeSpan'],
-        sliderMin: json['sliderMin'],
-        sliderMax: json['sliderMax'],
-        setPointMin:
-            json['setPointMin'] != null ? json['setPointMin'].toDouble() : null,
-        setPointMax:
-            json['setPointMax'] != null ? json['setPointMax'].toDouble() : null,
-        pageId: json['pageId'] != null ? json['pageId'] : null);
+      id: json['id'],
+      title: json['title'],
+      tileSize: json['tileSize'],
+      objectType: json['objectType'],
+      timeSpan: json['timeSpan'],
+      sliderMin: json['sliderMin'],
+      sliderMax: json['sliderMax'],
+      setPointMin:
+          json['setPointMin'] != null ? json['setPointMin'].toDouble() : null,
+      setPointMax:
+          json['setPointMax'] != null ? json['setPointMax'].toDouble() : null,
+      pageId: json['pageId'] != null ? json['pageId'] : null,
+      secured: json['secured'] != null ? json['secured'] : false,
+    );
   }
 
   Map<String, dynamic> toJson() => {
@@ -49,7 +53,12 @@ class FavoriteModel {
         'setPointMin': setPointMin,
         'setPointMax': setPointMax,
         'pageId': pageId,
+        'secured': secured
       };
+
+  setSecured(bool secured) {
+    this.secured = secured;
+  }
 
   setPageId(String pageId) {
     this.pageId = pageId;

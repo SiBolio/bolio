@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smarthome/Services/colorsService.dart';
 import 'package:smarthome/Services/httpService.dart';
+import 'package:smarthome/Services/securityService.dart';
 import 'package:smarthome/Services/socketService.dart';
 import 'lineGraph.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -16,6 +17,7 @@ class SmarthomeCard extends StatefulWidget {
   final double setPointMin;
   final double setPointMax;
   final IO.Socket socket;
+  final bool secured;
 
   SmarthomeCard({
     this.id,
@@ -28,6 +30,7 @@ class SmarthomeCard extends StatefulWidget {
     this.setPointMin,
     this.setPointMax,
     this.socket,
+    this.secured,
   });
 
   SocketService socketSrv;
@@ -38,10 +41,12 @@ class SmarthomeCard extends StatefulWidget {
 
 class _SmarthomeCardState extends State<SmarthomeCard> {
   HttpService http;
+  SecurityService securitySrv;
 
   @override
   void initState() {
     http = new HttpService();
+    securitySrv = new SecurityService();
     widget.socketSrv =
         new SocketService(socket: widget.socket, favoriteId: widget.id);
 
@@ -290,20 +295,34 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
 
   Widget _getOnOffCard(String _switchValue) {
     String _valueToSet;
-    bool _clicked = false;
     if (_switchValue == 'true') {
       _valueToSet = 'false';
     } else {
       _valueToSet = 'true';
     }
     return GestureDetector(
-      onTap: () {
-        setState(
-          () {
-            _clicked = true;
-            http.setObjectValue(widget.id, _valueToSet);
-          },
-        );
+      onTap: () async {
+        if (widget.secured) {
+          securitySrv.checkBiometrics().then((canCheckBiometrics) {
+            if (canCheckBiometrics) {
+              securitySrv.checkAuthentication().then((authenticated) {
+                if (authenticated) {
+                  setState(
+                    () {
+                      http.setObjectValue(widget.id, _valueToSet);
+                    },
+                  );
+                }
+              });
+            }
+          });
+        } else {
+          setState(
+            () {
+              http.setObjectValue(widget.id, _valueToSet);
+            },
+          );
+        }
       },
       child: Card(
         shape: _switchValue == 'true'
@@ -319,13 +338,31 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Icon(
-                Icons.power_settings_new,
-                color: _switchValue == 'true' ? Colors.white : Colors.grey,
-                size: 44.0,
-              ),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: Container(),
+                  flex: 1,
+                ),
+                Expanded(
+                  child: Icon(
+                    Icons.power_settings_new,
+                    color: _switchValue == 'true' ? Colors.white : Colors.grey,
+                    size: 44.0,
+                  ),
+                  flex: 3,
+                ),
+                Expanded(
+                  child: widget.secured
+                      ? Icon(
+                          Icons.lock,
+                          color: BolioColors.dangerLine,
+                          size: 20.0,
+                        )
+                      : Container(),
+                  flex: 1,
+                ),
+              ],
             ),
             Flexible(
               child: Text(
@@ -441,4 +478,6 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
     }
     return BolioColors.surfaceCard;
   }
+
+  LocalAuthentication() {}
 }

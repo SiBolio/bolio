@@ -14,6 +14,7 @@ class BolioColors {
   static const surfaceCard = Color(0xFF1b1b1b);
   static const dangerCard = Color(0xFF494949);
   static const dangerLine = Color(0xFFf44336);
+  static const surfacePopup = Color(0xFF424242);
 
   getRandomColorLight() {
     return _randomColor.randomColor(colorBrightness: ColorBrightness.light);

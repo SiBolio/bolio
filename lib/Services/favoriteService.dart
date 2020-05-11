@@ -130,6 +130,7 @@ class FavoriteService {
                         ? favorite.setPointMax.toString()
                         : null,
                     null,
+                    favorite.secured,
                     context)
               }
           }
@@ -158,6 +159,7 @@ class FavoriteService {
     String setPointMin,
     String setPointMax,
     String pageId,
+    bool secured,
     context,
   ) async {
     if (timeSpan == null) {
@@ -173,6 +175,7 @@ class FavoriteService {
         favorite.setSetPointMin(setPointMin);
         favorite.setSetPointMax(setPointMax);
         favorite.setPageId(pageId);
+        favorite.setSecured(secured);
       }
     }
     var prefs = await SharedPreferences.getInstance();

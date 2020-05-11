@@ -15,6 +15,7 @@ import 'package:smarthome/Services/favoriteService.dart';
 import 'package:smarthome/Services/httpService.dart';
 import 'package:smarthome/Services/iconButtonService.dart';
 import 'package:smarthome/Services/settingsService.dart';
+import 'package:smarthome/Services/securityService.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
@@ -43,6 +44,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
   Icon _selectedIcon;
   List<AdapterModel> _adapters;
   IconButtonService _iconButtonSrv = new IconButtonService();
+  SecurityService _securityService = new SecurityService();
 
   @override
   void initState() {
@@ -262,10 +264,12 @@ class _AllAdapterPageState extends State<AllAdapterPage>
               String _isSelectedDropdownObjectType = object.objectType;
               String _isSelectedDropdownTimespan = object.timeSpan;
               String _isSelectedDropdownPage = object.pageId;
+              bool _isSecured = object.secured;
 
               return StatefulBuilder(
                 builder: (context, setState) {
                   return AlertDialog(
+                    backgroundColor: BolioColors.surfacePopup,
                     title: Text('Objekt bearbeiten'),
                     content: SingleChildScrollView(
                       reverse: true,
@@ -383,10 +387,10 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                               ],
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Visibility(
-                              visible: _isSelectedDropdownObjectType == 'Graph',
+                          Visibility(
+                            visible: _isSelectedDropdownObjectType == 'Graph',
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -417,13 +421,13 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                               ),
                             ),
                           ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.only(bottom: 10, top: 30.0),
-                            child: Visibility(
-                              visible: _isSelectedDropdownObjectType ==
-                                      'Einzelwert' ||
-                                  _isSelectedDropdownObjectType == 'Graph',
+                          Visibility(
+                            visible:
+                                _isSelectedDropdownObjectType == 'Einzelwert' ||
+                                    _isSelectedDropdownObjectType == 'Graph',
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.only(bottom: 10, top: 30.0),
                               child: Row(
                                 children: [
                                   Expanded(
@@ -486,6 +490,29 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                               ],
                             ),
                           ),
+                          Visibility(
+                            visible: _isSelectedDropdownObjectType ==
+                                'On/Off Button',
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 20.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('Geschützte Änderung: '),
+                                  Checkbox(
+                                    checkColor: Colors.black,
+                                    value: _isSecured,
+                                    onChanged: (bool newValue) {
+                                      setState(() {
+                                        _isSecured = newValue;
+                                      });
+                                    },
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -525,6 +552,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                                 setpointMinController.text,
                                 setpointMaxController.text,
                                 _isSelectedDropdownPage,
+                                _isSecured,
                                 context,
                               );
                             },
@@ -721,7 +749,10 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                 var _iconData = new IconData(snapshot.data[index].icon,
                     fontFamily: 'MaterialIcons', matchTextDirection: false);
                 return ListTile(
-                  leading: _iconButtonSrv.getPageIcon(Icon(_iconData,color: Colors.grey[900],)),
+                  leading: _iconButtonSrv.getPageIcon(Icon(
+                    _iconData,
+                    color: Colors.grey[900],
+                  )),
                   title: Text(snapshot.data[index].title),
                   onTap: () {
                     _editPage(snapshot.data[index]);
@@ -734,6 +765,10 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                         favoriteService.removePageFromPages(
                             snapshot.data[index].id, context);
                       });
+                      final snackBar = SnackBar(
+                        content: Text('Seite entfernt'),
+                      );
+                      Scaffold.of(context).showSnackBar(snackBar);
                     },
                   ),
                 );
@@ -743,7 +778,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
             return Center(child: Text('Sie haben keine Seite angelegt.'));
           }
         } else {
-          return new CircularProgressIndicator();
+          return CircularProgressIndicator();
         }
       },
     );
@@ -752,7 +787,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
   _editPage(PageModel page) async {
     TextEditingController pageTitleController = new TextEditingController();
     pageTitleController.text = page.title;
-    var _iconData = new IconData(page.icon,
+    var _iconData = IconData(page.icon,
         fontFamily: 'MaterialIcons', matchTextDirection: false);
     _selectedIcon = Icon(_iconData);
     await showDialog(
@@ -761,6 +796,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
       builder: (BuildContext _context) {
         return StatefulBuilder(builder: (_context, setState) {
           return AlertDialog(
+            backgroundColor: BolioColors.surfacePopup,
             title: Text('Seite bearbeiten'),
             content: SingleChildScrollView(
               reverse: true,
@@ -846,6 +882,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
       builder: (BuildContext _context) {
         return StatefulBuilder(builder: (_context, setState) {
           return AlertDialog(
+            backgroundColor: BolioColors.surfacePopup,
             title: Text('Seite anlegen'),
             content: SingleChildScrollView(
               reverse: true,
