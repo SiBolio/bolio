@@ -45,6 +45,8 @@ class _AllAdapterPageState extends State<AllAdapterPage>
   IconButtonService _iconButtonSrv = new IconButtonService();
   bool _selectingFavorites = false;
   List<String> _selectedFavoritesIDs = new List<String>();
+  List<FavoriteModel> _displayedFavorites = new List<FavoriteModel>();
+  List<FavoriteModel> _allFavorites = new List<FavoriteModel>();
   String _filterFavorite = 'Alle';
 
   @override
@@ -292,10 +294,29 @@ class _AllAdapterPageState extends State<AllAdapterPage>
 
   Widget _getFavoriteList(List<FavoriteModel> objects, context) {
     return ReorderableListView(
-      onReorder: (int oldIndex, int newIndex) {
+      onReorder: (int oldIndexCurrentList, int newIndexCurrentList) {
+
+        int oldIndexCompleteList = 0;
+        int newIndexCompleteList = 0;
+
+        for (var i = 0; i < _allFavorites.length; i++) {
+          if (_allFavorites[i] == _displayedFavorites[oldIndexCurrentList]) {
+            oldIndexCompleteList = i;
+            break;
+          }
+        }
+
+        for (var i = 0; i < _allFavorites.length; i++) {
+          if (_allFavorites[i] == _displayedFavorites[newIndexCurrentList]) {
+            newIndexCompleteList = i;
+            break;
+          }
+        }
+
         setState(
           () {
-            favoriteService.reorderFavorites(oldIndex, newIndex, context);
+            favoriteService.reorderFavorites(
+                oldIndexCompleteList, newIndexCompleteList, context);
           },
         );
       },
@@ -303,16 +324,20 @@ class _AllAdapterPageState extends State<AllAdapterPage>
     );
   }
 
-  List<Widget> _getListTiles(List<FavoriteModel> objects, context) {
-    List<Widget> listTiles = new List<Widget>();
-    for (var object in objects) {
-      if (_filterFavorite == 'Alle' || _filterFavorite == object.pageId) {
-        
+  List<ListTile> _getListTiles(List<FavoriteModel> favorites, context) {
+    List<ListTile> listTiles = new List<ListTile>();
+
+    _displayedFavorites.clear();
+    _allFavorites.clear();
+    _allFavorites = favorites;
+
+    for (var favorite in favorites) {
+      if (_filterFavorite == 'Alle' || _filterFavorite == favorite.pageId) {
         var tile = new ListTile(
-          key: ValueKey(object),
-          title: Text(object.title),
+          key: ValueKey(favorite),
+          title: Text(favorite.title),
           subtitle: FutureBuilder(
-            future: favoriteService.getPageName(object.pageId, context),
+            future: favoriteService.getPageName(favorite.pageId, context),
             builder:
                 (BuildContext context, AsyncSnapshot<String> snapshotPages) {
               if (snapshotPages.hasData) {
@@ -324,21 +349,21 @@ class _AllAdapterPageState extends State<AllAdapterPage>
           ),
           leading: _selectingFavorites
               ? _iconButtonSrv
-                  .getSelectIcon(_selectedFavoritesIDs.contains(object.id))
-              : _iconButtonSrv.getItemIcon(object.objectType),
+                  .getSelectIcon(_selectedFavoritesIDs.contains(favorite.id))
+              : _iconButtonSrv.getItemIcon(favorite.objectType),
           onTap: () {
             if (_selectingFavorites) {
-              if (!_selectedFavoritesIDs.contains(object.id)) {
+              if (!_selectedFavoritesIDs.contains(favorite.id)) {
                 setState(() {
-                  _selectedFavoritesIDs.add(object.id);
+                  _selectedFavoritesIDs.add(favorite.id);
                 });
               } else {
                 setState(() {
-                  _selectedFavoritesIDs.remove(object.id);
+                  _selectedFavoritesIDs.remove(favorite.id);
                 });
               }
             } else {
-              _showEditFavoriteDialog(context, object);
+              _showEditFavoriteDialog(context, favorite);
             }
           },
           trailing: IconButton(
@@ -347,7 +372,8 @@ class _AllAdapterPageState extends State<AllAdapterPage>
               FavoriteService favoriteService = new FavoriteService();
               setState(
                 () {
-                  favoriteService.removeObjectFromFavorites(object.id, context);
+                  favoriteService.removeObjectFromFavorites(
+                      favorite.id, context);
                 },
               );
               final snackBar = SnackBar(
@@ -358,6 +384,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
           ),
         );
         listTiles.add(tile);
+        _displayedFavorites.add(favorite);
       }
     }
     return listTiles;
