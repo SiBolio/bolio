@@ -132,4 +132,19 @@ class IconButtonService {
       ),
     );
   }
+
+  CircleAvatar getSelectIcon(bool isSelected) {
+    return CircleAvatar(
+      backgroundColor: isSelected? BolioColors.secondary: Colors.white60,
+      child: new IconButton(
+        icon: Icon(
+          isSelected
+              ? Icons.check_box
+              : Icons.check_box_outline_blank,
+          color:Colors.black,
+        ),
+        onPressed: null,
+      ),
+    );
+  }
 }

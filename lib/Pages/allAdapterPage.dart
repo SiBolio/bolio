@@ -45,6 +45,8 @@ class _AllAdapterPageState extends State<AllAdapterPage>
   List<AdapterModel> _adapters;
   IconButtonService _iconButtonSrv = new IconButtonService();
   SecurityService _securityService = new SecurityService();
+  bool _selectingFavorites = false;
+  List<String> _selectedFavoritesIDs = new List<String>();
 
   @override
   void initState() {
@@ -94,6 +96,32 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                 });
               }),
           title: const Text('Einstellungen'),
+          actions: <Widget>[
+            IconButton(
+              icon: _selectingFavorites
+                  ? Icon(Icons.check_box)
+                  : Icon(Icons.check_box_outline_blank),
+              onPressed: () {
+                setState(() {
+                  _selectingFavorites = !_selectingFavorites;
+                });
+                if (_selectingFavorites) {
+                  _selectedFavoritesIDs.clear();
+                }
+              },
+            ),
+            /*  PopupMenuButton<Choice>(
+              onSelected: _select,
+              itemBuilder: (BuildContext context) {
+                return choices.skip(2).map((Choice choice) {
+                  return PopupMenuItem<Choice>(
+                    value: choice,
+                    child: Text(choice.title),
+                  );
+                }).toList();
+              },
+            ), */
+          ],
           bottom: TabBar(
             controller: _tabController,
             tabs: myTabs,
@@ -220,358 +248,31 @@ class _AllAdapterPageState extends State<AllAdapterPage>
   }
 
   List<Widget> _getListTiles(List<FavoriteModel> objects, context) {
+    print(_selectedFavoritesIDs.length);
     List<Widget> listTiles = new List<Widget>();
     for (var object in objects) {
       var tile = new ListTile(
         key: ValueKey(object),
         title: Text(object.title),
         subtitle: Text(object.objectType),
-        leading: _iconButtonSrv.getItemIcon(object.objectType),
+        leading: _selectingFavorites
+            ? _iconButtonSrv
+                .getSelectIcon(_selectedFavoritesIDs.contains(object.id))
+            : _iconButtonSrv.getItemIcon(object.objectType),
         onTap: () {
-          return showDialog<void>(
-            context: context,
-            builder: (BuildContext context) {
-              TextEditingController nameController =
-                  new TextEditingController();
-              nameController.text = object.title;
-
-              TextEditingController setpointMinController =
-                  new TextEditingController();
-
-              if (object.setPointMin == null) {
-                setpointMinController.text = '';
-              } else {
-                setpointMinController.text = object.setPointMin.toString();
-              }
-
-              TextEditingController setpointMaxController =
-                  new TextEditingController();
-
-              if (object.setPointMax == null) {
-                setpointMaxController.text = '';
-              } else {
-                setpointMaxController.text = object.setPointMax.toString();
-              }
-
-              GlobalKey<FormState> _setpointMinKey = GlobalKey();
-
-              List _isSelected = <bool>[
-                object.tileSize == 'S',
-                object.tileSize == 'M',
-                object.tileSize == 'L'
-              ];
-
-              String _isSelectedDropdownObjectType = object.objectType;
-              String _isSelectedDropdownTimespan = object.timeSpan;
-              String _isSelectedDropdownPage = object.pageId;
-              bool _isSecured = object.secured;
-
-              return StatefulBuilder(
-                builder: (context, setState) {
-                  return AlertDialog(
-                    backgroundColor: BolioColors.surfacePopup,
-                    title: Text('Objekt bearbeiten'),
-                    content: SingleChildScrollView(
-                      reverse: true,
-                      scrollDirection: Axis.vertical,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextFormField(
-                            controller: nameController,
-                            decoration:
-                                InputDecoration(labelText: 'Objektname'),
-                          ),
-                          TextFormField(
-                            enabled: false,
-                            initialValue: object.id,
-                            decoration: InputDecoration(labelText: 'Objekt ID'),
-                          ),
-                          FutureBuilder(
-                            future: favoriteService.getPages(context),
-                            builder: (BuildContext context,
-                                AsyncSnapshot<List<PageModel>> snapshotPages) {
-                              if (snapshotPages.hasData &&
-                                  snapshotPages.data.length > 0) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(top: 8.0),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text('Seite: '),
-                                      DropdownButton<String>(
-                                        value: _isSelectedDropdownPage,
-                                        items: _getDropDownPageItems(
-                                            snapshotPages.data),
-                                        onChanged: (String newValue) {
-                                          setState(
-                                            () {
-                                              _isSelectedDropdownPage =
-                                                  newValue;
-                                            },
-                                          );
-                                        },
-                                      )
-                                    ],
-                                  ),
-                                );
-                              } else {
-                                return Container();
-                              }
-                            },
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 15.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Größe: '),
-                                ToggleButtons(
-                                  fillColor: BolioColors.primary,
-                                  selectedColor: Colors.black,
-                                  children: <Widget>[
-                                    Text('S'),
-                                    Text('M'),
-                                    Text('L'),
-                                  ],
-                                  onPressed: (int index) {
-                                    setState(
-                                      () {
-                                        for (int buttonIndex = 0;
-                                            buttonIndex < _isSelected.length;
-                                            buttonIndex++) {
-                                          if (buttonIndex == index) {
-                                            _isSelected[buttonIndex] = true;
-                                          } else {
-                                            _isSelected[buttonIndex] = false;
-                                          }
-                                        }
-                                      },
-                                    );
-                                  },
-                                  isSelected: _isSelected,
-                                ),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 15.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Objekttyp: '),
-                                DropdownButton<String>(
-                                  value: _isSelectedDropdownObjectType,
-                                  items: <String>[
-                                    'Einzelwert',
-                                    'On/Off Button',
-                                    'Graph',
-                                    'Slider',
-                                    'Tür/Fensterkontakt'
-                                  ].map((String value) {
-                                    return new DropdownMenuItem<String>(
-                                      value: value,
-                                      child: new Text(value),
-                                    );
-                                  }).toList(),
-                                  onChanged: (String newValue) {
-                                    setState(
-                                      () {
-                                        _isSelectedDropdownObjectType =
-                                            newValue;
-                                      },
-                                    );
-                                  },
-                                )
-                              ],
-                            ),
-                          ),
-                          Visibility(
-                            visible: _isSelectedDropdownObjectType == 'Graph',
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text('Zeitraum: '),
-                                  DropdownButton<String>(
-                                    value: _isSelectedDropdownTimespan,
-                                    items: <String>[
-                                      '24 Stunden',
-                                      '7 Tage',
-                                      '30 Tag',
-                                    ].map((String value) {
-                                      return new DropdownMenuItem<String>(
-                                        value: value,
-                                        child: new Text(value),
-                                      );
-                                    }).toList(),
-                                    onChanged: (String newValue) {
-                                      setState(
-                                        () {
-                                          _isSelectedDropdownTimespan =
-                                              newValue;
-                                        },
-                                      );
-                                    },
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                          Visibility(
-                            visible:
-                                _isSelectedDropdownObjectType == 'Einzelwert' ||
-                                    _isSelectedDropdownObjectType == 'Graph',
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.only(bottom: 10, top: 30.0),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text('Sollbereich:'),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Visibility(
-                            visible:
-                                _isSelectedDropdownObjectType == 'Einzelwert' ||
-                                    _isSelectedDropdownObjectType == 'Graph',
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  flex: 2,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 8, right: 8),
-                                    child: Form(
-                                      key: _setpointMinKey,
-                                      child: TextFormField(
-                                        validator: (value) {
-                                          if ((value != '') &&
-                                              (setpointMaxController.text !=
-                                                  '')) {
-                                            if (int.parse(value) >=
-                                                int.parse(setpointMaxController
-                                                    .text)) {
-                                              return 'Falscher Sollbereich';
-                                            }
-                                          }
-                                          return null;
-                                        },
-                                        keyboardType: TextInputType.number,
-                                        controller: setpointMinController,
-                                        decoration: InputDecoration(
-                                            labelText: 'Minimum'),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 8, right: 8),
-                                    child: TextFormField(
-                                      validator: (value) {
-                                        return null;
-                                      },
-                                      keyboardType: TextInputType.number,
-                                      controller: setpointMaxController,
-                                      decoration:
-                                          InputDecoration(labelText: 'Maximum'),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Visibility(
-                            visible: _isSelectedDropdownObjectType ==
-                                'On/Off Button',
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 20.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text('Geschützte Änderung: '),
-                                  Checkbox(
-                                    checkColor: Colors.black,
-                                    value: _isSecured,
-                                    onChanged: (bool newValue) {
-                                      setState(() {
-                                        _isSecured = newValue;
-                                      });
-                                    },
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    actions: <Widget>[
-                      FlatButton(
-                        child: Text('Abbrechen'),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                      RaisedButton(
-                        child: Text('Speichern'),
-                        color: BolioColors.primary,
-                        onPressed: () async {
-                          if (_isSelectedDropdownObjectType == 'Einzelwert') {
-                            if (!_setpointMinKey.currentState.validate()) {
-                              return null;
-                            }
-                          }
-                          FavoriteService favoriteService =
-                              new FavoriteService();
-
-                          setState(
-                            () {
-                              var tileSize = 'S';
-                              if (_isSelected[1]) {
-                                tileSize = 'M';
-                              } else if (_isSelected[2]) {
-                                tileSize = 'L';
-                              }
-                              favoriteService.updateFavorite(
-                                object.id,
-                                nameController.text,
-                                tileSize,
-                                _isSelectedDropdownObjectType,
-                                _isSelectedDropdownTimespan,
-                                setpointMinController.text,
-                                setpointMaxController.text,
-                                _isSelectedDropdownPage,
-                                _isSecured,
-                                context,
-                              );
-                            },
-                          );
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => AllAdapterPage()),
-                          ).then((value) {
-                            setState(() {});
-                          });
-                        },
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          );
+          if (_selectingFavorites) {
+            if (!_selectedFavoritesIDs.contains(object.id)) {
+              setState(() {
+                _selectedFavoritesIDs.add(object.id);
+              });
+            } else {
+              setState(() {
+                _selectedFavoritesIDs.remove(object.id);
+              });
+            }
+          } else {
+            _showEditFavoriteDialog(context, object);
+          }
         },
         trailing: IconButton(
           icon: Icon(Icons.delete),
@@ -592,6 +293,336 @@ class _AllAdapterPageState extends State<AllAdapterPage>
       listTiles.add(tile);
     }
     return listTiles;
+  }
+
+  Future<void> _showEditFavoriteDialog(context, FavoriteModel object) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        TextEditingController nameController = new TextEditingController();
+        nameController.text = object.title;
+
+        TextEditingController setpointMinController =
+            new TextEditingController();
+
+        if (object.setPointMin == null) {
+          setpointMinController.text = '';
+        } else {
+          setpointMinController.text = object.setPointMin.toString();
+        }
+
+        TextEditingController setpointMaxController =
+            new TextEditingController();
+
+        if (object.setPointMax == null) {
+          setpointMaxController.text = '';
+        } else {
+          setpointMaxController.text = object.setPointMax.toString();
+        }
+
+        GlobalKey<FormState> _setpointMinKey = GlobalKey();
+
+        List _isSelected = <bool>[
+          object.tileSize == 'S',
+          object.tileSize == 'M',
+          object.tileSize == 'L'
+        ];
+
+        String _isSelectedDropdownObjectType = object.objectType;
+        String _isSelectedDropdownTimespan = object.timeSpan;
+        String _isSelectedDropdownPage = object.pageId;
+        bool _isSecured = object.secured;
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: BolioColors.surfacePopup,
+              title: Text('Objekt bearbeiten'),
+              content: SingleChildScrollView(
+                reverse: true,
+                scrollDirection: Axis.vertical,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: nameController,
+                      decoration: InputDecoration(labelText: 'Objektname'),
+                    ),
+                    TextFormField(
+                      enabled: false,
+                      initialValue: object.id,
+                      decoration: InputDecoration(labelText: 'Objekt ID'),
+                    ),
+                    FutureBuilder(
+                      future: favoriteService.getPages(context),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<List<PageModel>> snapshotPages) {
+                        if (snapshotPages.hasData &&
+                            snapshotPages.data.length > 0) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Seite: '),
+                                DropdownButton<String>(
+                                  value: _isSelectedDropdownPage,
+                                  items:
+                                      _getDropDownPageItems(snapshotPages.data),
+                                  onChanged: (String newValue) {
+                                    setState(
+                                      () {
+                                        _isSelectedDropdownPage = newValue;
+                                      },
+                                    );
+                                  },
+                                )
+                              ],
+                            ),
+                          );
+                        } else {
+                          return Container();
+                        }
+                      },
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 15.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Größe: '),
+                          ToggleButtons(
+                            fillColor: BolioColors.primary,
+                            selectedColor: Colors.black,
+                            children: <Widget>[
+                              Text('S'),
+                              Text('M'),
+                              Text('L'),
+                            ],
+                            onPressed: (int index) {
+                              setState(
+                                () {
+                                  for (int buttonIndex = 0;
+                                      buttonIndex < _isSelected.length;
+                                      buttonIndex++) {
+                                    if (buttonIndex == index) {
+                                      _isSelected[buttonIndex] = true;
+                                    } else {
+                                      _isSelected[buttonIndex] = false;
+                                    }
+                                  }
+                                },
+                              );
+                            },
+                            isSelected: _isSelected,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 15.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Objekttyp: '),
+                          DropdownButton<String>(
+                            value: _isSelectedDropdownObjectType,
+                            items: <String>[
+                              'Einzelwert',
+                              'On/Off Button',
+                              'Graph',
+                              'Slider',
+                              'Tür/Fensterkontakt'
+                            ].map((String value) {
+                              return new DropdownMenuItem<String>(
+                                value: value,
+                                child: new Text(value),
+                              );
+                            }).toList(),
+                            onChanged: (String newValue) {
+                              setState(
+                                () {
+                                  _isSelectedDropdownObjectType = newValue;
+                                },
+                              );
+                            },
+                          )
+                        ],
+                      ),
+                    ),
+                    Visibility(
+                      visible: _isSelectedDropdownObjectType == 'Graph',
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Zeitraum: '),
+                            DropdownButton<String>(
+                              value: _isSelectedDropdownTimespan,
+                              items: <String>[
+                                '24 Stunden',
+                                '7 Tage',
+                                '30 Tag',
+                              ].map((String value) {
+                                return new DropdownMenuItem<String>(
+                                  value: value,
+                                  child: new Text(value),
+                                );
+                              }).toList(),
+                              onChanged: (String newValue) {
+                                setState(
+                                  () {
+                                    _isSelectedDropdownTimespan = newValue;
+                                  },
+                                );
+                              },
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    Visibility(
+                      visible: _isSelectedDropdownObjectType == 'Einzelwert' ||
+                          _isSelectedDropdownObjectType == 'Graph',
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10, top: 30.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text('Sollbereich:'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Visibility(
+                      visible: _isSelectedDropdownObjectType == 'Einzelwert' ||
+                          _isSelectedDropdownObjectType == 'Graph',
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 8, right: 8),
+                              child: Form(
+                                key: _setpointMinKey,
+                                child: TextFormField(
+                                  validator: (value) {
+                                    if ((value != '') &&
+                                        (setpointMaxController.text != '')) {
+                                      if (int.parse(value) >=
+                                          int.parse(
+                                              setpointMaxController.text)) {
+                                        return 'Falscher Sollbereich';
+                                      }
+                                    }
+                                    return null;
+                                  },
+                                  keyboardType: TextInputType.number,
+                                  controller: setpointMinController,
+                                  decoration:
+                                      InputDecoration(labelText: 'Minimum'),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 8, right: 8),
+                              child: TextFormField(
+                                validator: (value) {
+                                  return null;
+                                },
+                                keyboardType: TextInputType.number,
+                                controller: setpointMaxController,
+                                decoration:
+                                    InputDecoration(labelText: 'Maximum'),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Visibility(
+                      visible: _isSelectedDropdownObjectType == 'On/Off Button',
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 20.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Geschützte Änderung: '),
+                            Checkbox(
+                              checkColor: Colors.black,
+                              value: _isSecured,
+                              onChanged: (bool newValue) {
+                                setState(() {
+                                  _isSecured = newValue;
+                                });
+                              },
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text('Abbrechen'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                RaisedButton(
+                  child: Text('Speichern'),
+                  color: BolioColors.primary,
+                  onPressed: () async {
+                    if (_isSelectedDropdownObjectType == 'Einzelwert') {
+                      if (!_setpointMinKey.currentState.validate()) {
+                        return null;
+                      }
+                    }
+                    FavoriteService favoriteService = new FavoriteService();
+
+                    setState(
+                      () {
+                        var tileSize = 'S';
+                        if (_isSelected[1]) {
+                          tileSize = 'M';
+                        } else if (_isSelected[2]) {
+                          tileSize = 'L';
+                        }
+                        favoriteService.updateFavorite(
+                          object.id,
+                          nameController.text,
+                          tileSize,
+                          _isSelectedDropdownObjectType,
+                          _isSelectedDropdownTimespan,
+                          setpointMinController.text,
+                          setpointMaxController.text,
+                          _isSelectedDropdownPage,
+                          _isSecured,
+                          context,
+                        );
+                      },
+                    );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AllAdapterPage()),
+                    ).then((value) {
+                      setState(() {});
+                    });
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   List<DropdownMenuItem<String>> _getDropDownPageItems(List<PageModel> pages) {
