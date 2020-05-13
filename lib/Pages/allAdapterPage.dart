@@ -15,7 +15,6 @@ import 'package:smarthome/Services/favoriteService.dart';
 import 'package:smarthome/Services/httpService.dart';
 import 'package:smarthome/Services/iconButtonService.dart';
 import 'package:smarthome/Services/settingsService.dart';
-import 'package:smarthome/Services/securityService.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
@@ -44,7 +43,6 @@ class _AllAdapterPageState extends State<AllAdapterPage>
   Icon _selectedIcon;
   List<AdapterModel> _adapters;
   IconButtonService _iconButtonSrv = new IconButtonService();
-  SecurityService _securityService = new SecurityService();
   bool _selectingFavorites = false;
   List<String> _selectedFavoritesIDs = new List<String>();
 
@@ -110,17 +108,31 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                 }
               },
             ),
-            /*  PopupMenuButton<Choice>(
-              onSelected: _select,
-              itemBuilder: (BuildContext context) {
-                return choices.skip(2).map((Choice choice) {
-                  return PopupMenuItem<Choice>(
-                    value: choice,
-                    child: Text(choice.title),
-                  );
-                }).toList();
+            PopupMenuButton(
+              itemBuilder: (context) {
+                var list = List<PopupMenuEntry<Object>>();
+                list.add(
+                  PopupMenuItem(
+                    child: Text("Favoriten zuordnen"),
+                    value: 1,
+                    enabled:
+                        _selectingFavorites && _selectedFavoritesIDs.length > 0
+                            ? true
+                            : false,
+                  ),
+                );
+                return list;
               },
-            ), */
+              onSelected: (value) {
+                if (value == 1) {
+                  _showAddToPagePopup();
+                }
+              },
+              icon: Icon(
+                Icons.more_vert,
+                color: Colors.white,
+              ),
+            )
           ],
           bottom: TabBar(
             controller: _tabController,
@@ -248,13 +260,21 @@ class _AllAdapterPageState extends State<AllAdapterPage>
   }
 
   List<Widget> _getListTiles(List<FavoriteModel> objects, context) {
-    print(_selectedFavoritesIDs.length);
     List<Widget> listTiles = new List<Widget>();
     for (var object in objects) {
       var tile = new ListTile(
         key: ValueKey(object),
         title: Text(object.title),
-        subtitle: Text(object.objectType),
+        subtitle: FutureBuilder(
+          future: favoriteService.getPageName(object.pageId, context),
+          builder: (BuildContext context, AsyncSnapshot<String> snapshotPages) {
+            if (snapshotPages.hasData) {
+              return Text(snapshotPages.data);
+            } else {
+              return Text('');
+            }
+          },
+        ),
         leading: _selectingFavorites
             ? _iconButtonSrv
                 .getSelectIcon(_selectedFavoritesIDs.contains(object.id))
@@ -995,6 +1015,70 @@ class _AllAdapterPageState extends State<AllAdapterPage>
               },
             )
           }
+      },
+    );
+  }
+
+  _showAddToPagePopup() {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Seite auswählen'),
+          content: Container(
+            height: 200,
+            width: 300,
+            child: FutureBuilder(
+              future: favoriteService.getPages(context),
+              builder: (context, AsyncSnapshot<List<PageModel>> snapshot) {
+                if (snapshot.hasData) {
+                  if (snapshot.data.length > 0) {
+                    return ListView.builder(
+                        itemCount: snapshot.data.length,
+                        itemBuilder: (BuildContext ctxt, int index) {
+                          var iconData = new IconData(snapshot.data[index].icon,
+                              fontFamily: 'MaterialIcons',
+                              matchTextDirection: false);
+
+                          return ListTile(
+                            leading: Icon(iconData),
+                            title: Text(snapshot.data[index].title),
+                            onTap: () async {
+                              for (var favorite in _selectedFavoritesIDs) {
+                                await favoriteService.updateFavoritePageId(
+                                    favorite, snapshot.data[index].id, context);
+                              }
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AllAdapterPage(
+                                      mainSocket: widget.mainSocket),
+                                ),
+                              ).then((value) {
+                                setState(() {});
+                              });
+                            },
+                          );
+                        });
+                  } else {
+                    return Center(child: Text('Keine Seiten angelegt'));
+                  }
+                } else {
+                  return CircularProgressIndicator();
+                }
+              },
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Abbrechen'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
       },
     );
   }

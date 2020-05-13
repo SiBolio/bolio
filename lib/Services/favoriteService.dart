@@ -101,6 +101,16 @@ class FavoriteService {
     prefs.setString('favorites', jsonEncode(_encodeFavorites(favorites)));
   }
 
+  Future<String> getPageName(String pageId, context) async {
+    List<PageModel> pages = await getPages(context);
+    for (var page in pages) {
+      if (page.id == pageId) {
+        return page.title;
+      }
+    }
+    return '';
+  }
+
   removePageFromPages(String id, context) async {
     List<PageModel> pages = await getPages(context);
     for (var page in List.from(pages)) {
@@ -148,6 +158,17 @@ class FavoriteService {
     }
     var prefs = await SharedPreferences.getInstance();
     prefs.setString('pages', jsonEncode(_encodePages(pages)));
+  }
+
+  updateFavoritePageId(String id, String pageId, context) async {
+    List<FavoriteModel> favorites = await getFavorites(context);
+    for (FavoriteModel favorite in favorites) {
+      if (favorite.id == id) {
+        favorite.setPageId(pageId);
+      }
+    }
+    var prefs = await SharedPreferences.getInstance();
+    prefs.setString('favorites', jsonEncode(_encodeFavorites(favorites)));
   }
 
   updateFavorite(
