@@ -45,6 +45,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
   IconButtonService _iconButtonSrv = new IconButtonService();
   bool _selectingFavorites = false;
   List<String> _selectedFavoritesIDs = new List<String>();
+  String _filterFavorite = 'Alle';
 
   @override
   void initState() {
@@ -95,44 +96,87 @@ class _AllAdapterPageState extends State<AllAdapterPage>
               }),
           title: const Text('Einstellungen'),
           actions: <Widget>[
-            IconButton(
-              icon: _selectingFavorites
-                  ? Icon(Icons.check_box)
-                  : Icon(Icons.check_box_outline_blank),
-              onPressed: () {
-                setState(() {
-                  _selectingFavorites = !_selectingFavorites;
-                });
-                if (_selectingFavorites) {
-                  _selectedFavoritesIDs.clear();
-                }
-              },
-            ),
-            PopupMenuButton(
-              itemBuilder: (context) {
-                var list = List<PopupMenuEntry<Object>>();
-                list.add(
-                  PopupMenuItem(
-                    child: Text("Favoriten zuordnen"),
-                    value: 1,
-                    enabled:
-                        _selectingFavorites && _selectedFavoritesIDs.length > 0
-                            ? true
-                            : false,
-                  ),
-                );
-                return list;
-              },
-              onSelected: (value) {
-                if (value == 1) {
-                  _showAddToPagePopup();
-                }
-              },
-              icon: Icon(
-                Icons.more_vert,
-                color: Colors.white,
-              ),
-            )
+            _tabController.index == 0
+                ? FutureBuilder(
+                    future: favoriteService.getPages(context),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<List<PageModel>> snapshotFilterPages) {
+                      if (snapshotFilterPages.hasData) {
+                        return PopupMenuButton(
+                          itemBuilder: (context) {
+                            var list = List<PopupMenuEntry<Object>>();
+                            list.add(PopupMenuItem(
+                              child: Text('Alle'),
+                              value: 'Alle',
+                            ));
+                            for (var page in snapshotFilterPages.data) {
+                              list.add(
+                                PopupMenuItem(
+                                  child: Text(page.title),
+                                  value: page.id,
+                                ),
+                              );
+                            }
+                            return list;
+                          },
+                          onSelected: (value) {
+                            setState(() {
+                              _filterFavorite = value;
+                            });
+                          },
+                          icon: Icon(
+                            Icons.filter_list,
+                            color: Colors.white,
+                          ),
+                        );
+                      } else {
+                        return CircularProgressIndicator();
+                      }
+                    },
+                  )
+                : Container(),
+            _tabController.index == 0
+                ? IconButton(
+                    icon: _selectingFavorites
+                        ? Icon(Icons.check_box)
+                        : Icon(Icons.check_box_outline_blank),
+                    onPressed: () {
+                      setState(() {
+                        _selectingFavorites = !_selectingFavorites;
+                      });
+                      if (_selectingFavorites) {
+                        _selectedFavoritesIDs.clear();
+                      }
+                    },
+                  )
+                : Container(),
+            _tabController.index == 0
+                ? PopupMenuButton(
+                    itemBuilder: (context) {
+                      var list = List<PopupMenuEntry<Object>>();
+                      list.add(
+                        PopupMenuItem(
+                          child: Text("Favoriten zuordnen"),
+                          value: 1,
+                          enabled: _selectingFavorites &&
+                                  _selectedFavoritesIDs.length > 0
+                              ? true
+                              : false,
+                        ),
+                      );
+                      return list;
+                    },
+                    onSelected: (value) {
+                      if (value == 1) {
+                        _showAddToPagePopup();
+                      }
+                    },
+                    icon: Icon(
+                      Icons.more_vert,
+                      color: Colors.white,
+                    ),
+                  )
+                : Container()
           ],
           bottom: TabBar(
             controller: _tabController,
@@ -262,55 +306,59 @@ class _AllAdapterPageState extends State<AllAdapterPage>
   List<Widget> _getListTiles(List<FavoriteModel> objects, context) {
     List<Widget> listTiles = new List<Widget>();
     for (var object in objects) {
-      var tile = new ListTile(
-        key: ValueKey(object),
-        title: Text(object.title),
-        subtitle: FutureBuilder(
-          future: favoriteService.getPageName(object.pageId, context),
-          builder: (BuildContext context, AsyncSnapshot<String> snapshotPages) {
-            if (snapshotPages.hasData) {
-              return Text(snapshotPages.data);
+      if (_filterFavorite == 'Alle' || _filterFavorite == object.pageId) {
+        
+        var tile = new ListTile(
+          key: ValueKey(object),
+          title: Text(object.title),
+          subtitle: FutureBuilder(
+            future: favoriteService.getPageName(object.pageId, context),
+            builder:
+                (BuildContext context, AsyncSnapshot<String> snapshotPages) {
+              if (snapshotPages.hasData) {
+                return Text(snapshotPages.data);
+              } else {
+                return Text('');
+              }
+            },
+          ),
+          leading: _selectingFavorites
+              ? _iconButtonSrv
+                  .getSelectIcon(_selectedFavoritesIDs.contains(object.id))
+              : _iconButtonSrv.getItemIcon(object.objectType),
+          onTap: () {
+            if (_selectingFavorites) {
+              if (!_selectedFavoritesIDs.contains(object.id)) {
+                setState(() {
+                  _selectedFavoritesIDs.add(object.id);
+                });
+              } else {
+                setState(() {
+                  _selectedFavoritesIDs.remove(object.id);
+                });
+              }
             } else {
-              return Text('');
+              _showEditFavoriteDialog(context, object);
             }
           },
-        ),
-        leading: _selectingFavorites
-            ? _iconButtonSrv
-                .getSelectIcon(_selectedFavoritesIDs.contains(object.id))
-            : _iconButtonSrv.getItemIcon(object.objectType),
-        onTap: () {
-          if (_selectingFavorites) {
-            if (!_selectedFavoritesIDs.contains(object.id)) {
-              setState(() {
-                _selectedFavoritesIDs.add(object.id);
-              });
-            } else {
-              setState(() {
-                _selectedFavoritesIDs.remove(object.id);
-              });
-            }
-          } else {
-            _showEditFavoriteDialog(context, object);
-          }
-        },
-        trailing: IconButton(
-          icon: Icon(Icons.delete),
-          onPressed: () {
-            FavoriteService favoriteService = new FavoriteService();
-            setState(
-              () {
-                favoriteService.removeObjectFromFavorites(object.id, context);
-              },
-            );
-            final snackBar = SnackBar(
-              content: Text('Favorit entfernt'),
-            );
-            Scaffold.of(context).showSnackBar(snackBar);
-          },
-        ),
-      );
-      listTiles.add(tile);
+          trailing: IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () {
+              FavoriteService favoriteService = new FavoriteService();
+              setState(
+                () {
+                  favoriteService.removeObjectFromFavorites(object.id, context);
+                },
+              );
+              final snackBar = SnackBar(
+                content: Text('Favorit entfernt'),
+              );
+              Scaffold.of(context).showSnackBar(snackBar);
+            },
+          ),
+        );
+        listTiles.add(tile);
+      }
     }
     return listTiles;
   }
@@ -1035,32 +1083,33 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                 if (snapshot.hasData) {
                   if (snapshot.data.length > 0) {
                     return ListView.builder(
-                        itemCount: snapshot.data.length,
-                        itemBuilder: (BuildContext ctxt, int index) {
-                          var iconData = new IconData(snapshot.data[index].icon,
-                              fontFamily: 'MaterialIcons',
-                              matchTextDirection: false);
+                      itemCount: snapshot.data.length,
+                      itemBuilder: (BuildContext ctxt, int index) {
+                        var iconData = new IconData(snapshot.data[index].icon,
+                            fontFamily: 'MaterialIcons',
+                            matchTextDirection: false);
 
-                          return ListTile(
-                            leading: Icon(iconData),
-                            title: Text(snapshot.data[index].title),
-                            onTap: () async {
-                              for (var favorite in _selectedFavoritesIDs) {
-                                await favoriteService.updateFavoritePageId(
-                                    favorite, snapshot.data[index].id, context);
-                              }
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AllAdapterPage(
-                                      mainSocket: widget.mainSocket),
-                                ),
-                              ).then((value) {
-                                setState(() {});
-                              });
-                            },
-                          );
-                        });
+                        return ListTile(
+                          leading: Icon(iconData),
+                          title: Text(snapshot.data[index].title),
+                          onTap: () async {
+                            for (var favorite in _selectedFavoritesIDs) {
+                              await favoriteService.updateFavoritePageId(
+                                  favorite, snapshot.data[index].id, context);
+                            }
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AllAdapterPage(
+                                    mainSocket: widget.mainSocket),
+                              ),
+                            ).then((value) {
+                              setState(() {});
+                            });
+                          },
+                        );
+                      },
+                    );
                   } else {
                     return Center(child: Text('Keine Seiten angelegt'));
                   }
