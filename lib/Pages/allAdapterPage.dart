@@ -40,7 +40,8 @@ class _AllAdapterPageState extends State<AllAdapterPage>
   ];
 
   TabController _tabController;
-  Icon _selectedIcon;
+  Icon _selectedPageIcon;
+  Icon _selectedFavoriteIcon;
   List<AdapterModel> _adapters;
   IconButtonService _iconButtonSrv = new IconButtonService();
   bool _selectingFavorites = false;
@@ -295,7 +296,6 @@ class _AllAdapterPageState extends State<AllAdapterPage>
   Widget _getFavoriteList(List<FavoriteModel> objects, context) {
     return ReorderableListView(
       onReorder: (int oldIndexCurrentList, int newIndexCurrentList) {
-
         int oldIndexCompleteList = 0;
         int newIndexCompleteList = 0;
 
@@ -427,6 +427,12 @@ class _AllAdapterPageState extends State<AllAdapterPage>
         String _isSelectedDropdownTimespan = object.timeSpan;
         String _isSelectedDropdownPage = object.pageId;
         bool _isSecured = object.secured;
+
+        if (object.icon != null) {
+          IconData _iconData = IconData(object.icon,
+              fontFamily: 'MaterialIcons', matchTextDirection: false);
+          _selectedFavoriteIcon = Icon(_iconData);
+        }
 
         return StatefulBuilder(
           builder: (context, setState) {
@@ -661,6 +667,37 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                         ),
                       ),
                     ),
+                    Visibility(
+                      visible:
+                          _isSelectedDropdownObjectType == 'Tür/Fensterkontakt',
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            RaisedButton(
+                              color: BolioColors.surfaceCard,
+                              onPressed: () async {
+                                IconData icon =
+                                    await FlutterIconPicker.showIconPicker(
+                                        context,
+                                        iconPackMode: IconPack.material);
+
+                                if (icon != null) {
+                                  setState(() {
+                                    _selectedFavoriteIcon = Icon(icon);
+                                  });
+                                }
+                              },
+                              child: Text('Anderes Icon verwenden'),
+                            ),
+                            _selectedFavoriteIcon != null
+                                ? Icon(_selectedFavoriteIcon.icon, size: 35)
+                                : Container(),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -690,6 +727,13 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                         } else if (_isSelected[2]) {
                           tileSize = 'L';
                         }
+
+                        String _icon;
+                        _selectedFavoriteIcon == null
+                            ? _icon = ''
+                            : _icon =
+                                _selectedFavoriteIcon.icon.codePoint.toString();
+
                         favoriteService.updateFavorite(
                           object.id,
                           nameController.text,
@@ -700,6 +744,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                           setpointMaxController.text,
                           _isSelectedDropdownPage,
                           _isSecured,
+                          _icon,
                           context,
                         );
                       },
@@ -915,7 +960,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
     pageTitleController.text = page.title;
     var _iconData = IconData(page.icon,
         fontFamily: 'MaterialIcons', matchTextDirection: false);
-    _selectedIcon = Icon(_iconData);
+    _selectedPageIcon = Icon(_iconData);
     await showDialog(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -934,10 +979,10 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                     controller: pageTitleController,
                     decoration: InputDecoration(labelText: 'Seitenname'),
                   ),
-                  _selectedIcon != null
+                  _selectedPageIcon != null
                       ? Padding(
                           padding: const EdgeInsets.only(top: 18.0),
-                          child: Icon(_selectedIcon.icon, size: 35),
+                          child: Icon(_selectedPageIcon.icon, size: 35),
                         )
                       : Container(),
                   Padding(
@@ -949,7 +994,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                             _context,
                             iconPackMode: IconPack.material);
                         setState(() {
-                          _selectedIcon = Icon(icon);
+                          _selectedPageIcon = Icon(icon);
                         });
                       },
                       child: Text('Icon wählen'),
@@ -962,7 +1007,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
               FlatButton(
                 child: Text('Abbrechen'),
                 onPressed: () {
-                  _selectedIcon = null;
+                  _selectedPageIcon = null;
                   Navigator.of(_context).pop();
                 },
               ),
@@ -971,13 +1016,13 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                 color: BolioColors.primary,
                 onPressed: () {
                   int _codePoint;
-                  _selectedIcon == null
+                  _selectedPageIcon == null
                       ? _codePoint = 0
-                      : _codePoint = _selectedIcon.icon.codePoint;
+                      : _codePoint = _selectedPageIcon.icon.codePoint;
 
                   page.setTite(pageTitleController.text);
                   page.setIcon(_codePoint);
-                  _selectedIcon = null;
+                  _selectedPageIcon = null;
                   Navigator.of(_context).pop();
                 },
               )
@@ -1020,27 +1065,29 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                     controller: pageTitleController,
                     decoration: InputDecoration(labelText: 'Seitenname'),
                   ),
-                  _selectedIcon != null
-                      ? Padding(
-                          padding: const EdgeInsets.only(top: 18.0),
-                          child: Icon(_selectedIcon.icon, size: 35),
-                        )
-                      : Container(),
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: RaisedButton(
-                      color: BolioColors.surfaceCard,
-                      onPressed: () async {
-                        IconData icon = await FlutterIconPicker.showIconPicker(
-                            _context,
-                            iconPackMode: IconPack.material);
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        RaisedButton(
+                          color: BolioColors.surfaceCard,
+                          onPressed: () async {
+                            IconData icon =
+                                await FlutterIconPicker.showIconPicker(_context,
+                                    iconPackMode: IconPack.material);
 
-                        if (icon == icon) {}
-                        setState(() {
-                          _selectedIcon = Icon(icon);
-                        });
-                      },
-                      child: Text('Icon wählen'),
+                            if (icon == icon) {}
+                            setState(() {
+                              _selectedPageIcon = Icon(icon);
+                            });
+                          },
+                          child: Text('Icon wählen'),
+                        ),
+                        _selectedPageIcon != null
+                            ? Icon(_selectedPageIcon.icon, size: 35)
+                            : Container(),
+                      ],
                     ),
                   ),
                 ],
@@ -1050,7 +1097,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
               FlatButton(
                 child: Text('Abbrechen'),
                 onPressed: () {
-                  _selectedIcon = null;
+                  _selectedPageIcon = null;
                   Navigator.of(_context).pop();
                 },
               ),
@@ -1060,9 +1107,9 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                 onPressed: () {
                   setState(() {
                     int _codePoint;
-                    _selectedIcon == null
+                    _selectedPageIcon == null
                         ? _codePoint = 0
-                        : _codePoint = _selectedIcon.icon.codePoint;
+                        : _codePoint = _selectedPageIcon.icon.codePoint;
 
                     PageModel page = new PageModel(
                         id: new DateTime.now()
@@ -1072,7 +1119,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                         icon: _codePoint);
                     _pageToAdd = page;
                   });
-                  _selectedIcon = null;
+                  _selectedPageIcon = null;
                   Navigator.of(_context).pop();
                 },
               )

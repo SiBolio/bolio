@@ -145,6 +145,7 @@ class _StartPageState extends State<StartPage> {
                           setPointMax: favorites[index].setPointMax,
                           socket: socket,
                           secured: favorites[index].secured,
+                          icon: favorites[index].icon,
                         ),
                       ),
                       staggeredTileBuilder: (int index) {

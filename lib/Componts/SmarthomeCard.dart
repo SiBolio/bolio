@@ -18,6 +18,7 @@ class SmarthomeCard extends StatefulWidget {
   final double setPointMax;
   final IO.Socket socket;
   final bool secured;
+  final int icon;
 
   SmarthomeCard({
     this.id,
@@ -31,6 +32,7 @@ class SmarthomeCard extends StatefulWidget {
     this.setPointMax,
     this.socket,
     this.secured,
+    this.icon,
   });
 
   SocketService socketSrv;
@@ -382,6 +384,12 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
   }
 
   Widget _getContactCard(String _switchValue) {
+    IconData customIconData;
+    if (widget.icon != null) {
+      customIconData = IconData(widget.icon,
+          fontFamily: 'MaterialIcons', matchTextDirection: false);
+    }
+
     return Card(
       color: BolioColors.surfaceCard,
       child: Column(
@@ -389,11 +397,21 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Icon(
-              _switchValue == 'true' ? Icons.lock_open : Icons.lock,
-              color: Colors.grey,
-              size: 44.0,
-            ),
+            child: widget.icon == null
+                ? Icon(
+                    _switchValue == 'true' ? Icons.lock_open : Icons.lock,
+                    color: _switchValue == 'true'
+                        ? Colors.white
+                        : Colors.grey[600],
+                    size: 44.0,
+                  )
+                : Icon(
+                    customIconData,
+                    color: _switchValue == 'true'
+                        ? Colors.white
+                        : Colors.grey[600],
+                    size: 44.0,
+                  ),
           ),
           Flexible(
             child: Text(

@@ -17,12 +17,13 @@ class FavoriteService {
     }
 
     FavoriteModel favorite = new FavoriteModel(
-        id: object.id,
-        title: object.name,
-        tileSize: 'S',
-        objectType: objectType,
-        sliderMin: object.sliderMin,
-        sliderMax: object.sliderMax);
+      id: object.id,
+      title: object.name,
+      tileSize: 'S',
+      objectType: objectType,
+      sliderMin: object.sliderMin,
+      sliderMax: object.sliderMax,
+    );
     favorites.add(favorite);
     var prefs = await SharedPreferences.getInstance();
     prefs.setString('favorites', jsonEncode(_encodeFavorites(favorites)));
@@ -141,6 +142,7 @@ class FavoriteService {
                         : null,
                     null,
                     favorite.secured,
+                    favorite.icon != null ? favorite.icon.toString() : null,
                     context)
               }
           }
@@ -181,6 +183,7 @@ class FavoriteService {
     String setPointMax,
     String pageId,
     bool secured,
+    String icon,
     context,
   ) async {
     if (timeSpan == null) {
@@ -197,6 +200,7 @@ class FavoriteService {
         favorite.setSetPointMax(setPointMax);
         favorite.setPageId(pageId);
         favorite.setSecured(secured);
+        favorite.setIcon(icon);
       }
     }
     var prefs = await SharedPreferences.getInstance();

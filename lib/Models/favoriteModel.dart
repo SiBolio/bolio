@@ -9,6 +9,7 @@ class FavoriteModel {
   double setPointMin;
   double setPointMax;
   String pageId;
+  int icon;
   bool secured;
 
   FavoriteModel(
@@ -22,7 +23,8 @@ class FavoriteModel {
       this.setPointMin,
       this.setPointMax,
       this.pageId,
-      this.secured});
+      this.secured,
+      this.icon});
 
   factory FavoriteModel.fromJson(Map<String, dynamic> json) {
     return FavoriteModel(
@@ -39,6 +41,7 @@ class FavoriteModel {
           json['setPointMax'] != null ? json['setPointMax'].toDouble() : null,
       pageId: json['pageId'] != null ? json['pageId'] : null,
       secured: json['secured'] != null ? json['secured'] : false,
+      icon: json['icon'] != null ? json['icon'] : null,
     );
   }
 
@@ -53,7 +56,8 @@ class FavoriteModel {
         'setPointMin': setPointMin,
         'setPointMax': setPointMax,
         'pageId': pageId,
-        'secured': secured
+        'secured': secured,
+        'icon': icon,
       };
 
   setSecured(bool secured) {
@@ -93,6 +97,14 @@ class FavoriteModel {
       this.setPointMax = double.parse(setPointMax);
     } else {
       this.setPointMax = null;
+    }
+  }
+
+  setIcon(String icon) {
+    if (icon != null && icon != '') {
+      this.icon = int.parse(icon);
+    } else {
+      this.icon = null;
     }
   }
 }
