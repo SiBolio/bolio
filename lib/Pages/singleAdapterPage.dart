@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smarthome/Models/objectsModel.dart';
+import 'package:smarthome/Services/colorsService.dart';
 import 'package:smarthome/Services/httpService.dart';
 import 'package:smarthome/Services/favoriteService.dart';
 import 'package:smarthome/Services/iconButtonService.dart';
@@ -35,7 +36,9 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF121212),
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? BolioColors.surface
+          : null,
       appBar: AppBar(
         title: _isSearching ? _buildSearchField() : Text(widget.title),
         actions: <Widget>[

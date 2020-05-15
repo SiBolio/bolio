@@ -44,11 +44,13 @@ class SmarthomeCard extends StatefulWidget {
 class _SmarthomeCardState extends State<SmarthomeCard> {
   HttpService http;
   SecurityService securitySrv;
+  BolioColors bolioColors;
 
   @override
   void initState() {
     http = new HttpService();
     securitySrv = new SecurityService();
+    bolioColors = new BolioColors();
     widget.socketSrv =
         new SocketService(socket: widget.socket, favoriteId: widget.id);
 
@@ -80,14 +82,18 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
         builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
           if (snapshot.hasData) {
             return Card(
-              shape: RoundedRectangleBorder(
-                side: new BorderSide(
-                    color: _getSetPointColorLineGraph(
-                        snapshot.data, widget.setPointMin, widget.setPointMax),
-                    width: 1.0),
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              color: BolioColors.surfaceCard,
+              shape: widget.setPointMin != null || widget.setPointMax != null
+                  ? RoundedRectangleBorder(
+                      side: new BorderSide(
+                          color: _getSetPointColorLineGraph(snapshot.data,
+                              widget.setPointMin, widget.setPointMax),
+                          width: 1.0),
+                      borderRadius: BorderRadius.circular(4.0),
+                    )
+                  : null,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? BolioColors.surfaceCard
+                  : null,
               child: Column(
                 children: [
                   Flexible(
@@ -98,8 +104,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 16.0,
-                          color: _getSetPointColorFont(snapshot.data,
-                              widget.setPointMin, widget.setPointMax),
+                          color: bolioColors.getCardFontColor(context),
                           fontWeight: FontWeight.w400,
                         ),
                       ),
@@ -163,7 +168,9 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
               return Card(
-                color: BolioColors.surfaceCard,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? BolioColors.surfaceCard
+                    : null,
                 child: Column(
                   children: [
                     Row(
@@ -178,7 +185,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 16.0,
-                                color: Colors.grey[400],
+                                color: bolioColors.getCardFontColor(context),
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
@@ -218,7 +225,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                                         textAlign: TextAlign.right,
                                         style: TextStyle(
                                           fontSize: 38,
-                                          color: Colors.white,
+                                          color: bolioColors.getCardFontColor(context),
                                           fontWeight: FontWeight.w400,
                                         ),
                                       ),
@@ -259,7 +266,9 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
     }
 
     return Card(
-      color: BolioColors.surfaceCard,
+      color: Theme.of(context).brightness == Brightness.dark
+          ? BolioColors.surfaceCard
+          : null,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -335,7 +344,9 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
             : new RoundedRectangleBorder(
                 side: new BorderSide(color: Colors.grey[800], width: 1.0),
                 borderRadius: BorderRadius.circular(4.0)),
-        color: BolioColors.surfaceCard,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? BolioColors.surfaceCard
+            : null,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -349,7 +360,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                 Expanded(
                   child: Icon(
                     Icons.power_settings_new,
-                    color: _switchValue == 'true' ? Colors.white : Colors.grey,
+                    color: bolioColors.getIconColor(_switchValue, context),
                     size: 44.0,
                   ),
                   flex: 3,
@@ -372,7 +383,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 16.0,
-                  color: Colors.grey[400],
+                  color: bolioColors.getCardFontColor(context),
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -391,7 +402,9 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
     }
 
     return Card(
-      color: BolioColors.surfaceCard,
+      color: Theme.of(context).brightness == Brightness.dark
+          ? BolioColors.surfaceCard
+          : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
@@ -400,16 +413,12 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
             child: widget.icon == null
                 ? Icon(
                     _switchValue == 'true' ? Icons.lock_open : Icons.lock,
-                    color: _switchValue == 'true'
-                        ? Colors.white
-                        : Colors.grey[600],
+                    color: bolioColors.getIconColor(_switchValue, context),
                     size: 44.0,
                   )
                 : Icon(
                     customIconData,
-                    color: _switchValue == 'true'
-                        ? Colors.white
-                        : Colors.grey[600],
+                    color: bolioColors.getIconColor(_switchValue, context),
                     size: 44.0,
                   ),
           ),
@@ -419,7 +428,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 16.0,
-                color: Colors.grey[400],
+                color: bolioColors.getCardFontColor(context),
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -452,35 +461,27 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
         return BolioColors.dangerCard;
       }
     }
-    return BolioColors.surfaceCard;
+    return Theme.of(context).brightness == Brightness.dark
+        ? BolioColors.surfaceCard
+        : null;
   }
 
   _getSetPointColorFont(String value, double min, double max) {
     if (min != null) {
       if (double.parse(value) < min) {
-        return Colors.white;
+        return Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black;
       }
     }
     if (max != null) {
       if (double.parse(value) > max) {
-        return Colors.white;
+        return Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black;
       }
     }
     return Colors.grey[400];
-  }
-
-  _getSetPointColorFontGraph(String value, double min, double max) {
-    if (min != null) {
-      if (double.parse(value) < min) {
-        return BolioColors.dangerLine;
-      }
-    }
-    if (max != null) {
-      if (double.parse(value) > max) {
-        return BolioColors.dangerLine;
-      }
-    }
-    return Colors.white;
   }
 
   _getSetPointColorLineGraph(String value, double min, double max) {
@@ -496,6 +497,4 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
     }
     return BolioColors.surfaceCard;
   }
-
-  LocalAuthentication() {}
 }

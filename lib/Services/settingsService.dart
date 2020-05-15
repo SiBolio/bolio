@@ -46,4 +46,5 @@ class SettingsService {
       return null;
     }
   }
+
 }

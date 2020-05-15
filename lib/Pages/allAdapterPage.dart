@@ -1,3 +1,4 @@
+import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_iconpicker/Models/IconPack.dart';
@@ -49,6 +50,8 @@ class _AllAdapterPageState extends State<AllAdapterPage>
   List<FavoriteModel> _displayedFavorites = new List<FavoriteModel>();
   List<FavoriteModel> _allFavorites = new List<FavoriteModel>();
   String _filterFavorite = 'Alle';
+  bool darkThemeSwitch = true;
+  BolioColors bolioColors = new BolioColors();
 
   @override
   void initState() {
@@ -83,7 +86,9 @@ class _AllAdapterPageState extends State<AllAdapterPage>
         return null;
       },
       child: Scaffold(
-        backgroundColor: BolioColors.surface,
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? BolioColors.surface
+            : null,
         appBar: AppBar(
           leading: IconButton(
               icon: Icon(Icons.arrow_back),
@@ -129,7 +134,6 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                           },
                           icon: Icon(
                             Icons.filter_list,
-                            color: Colors.white,
                           ),
                         );
                       } else {
@@ -176,7 +180,6 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                     },
                     icon: Icon(
                       Icons.more_vert,
-                      color: Colors.white,
                     ),
                   )
                 : Container()
@@ -437,7 +440,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              backgroundColor: BolioColors.surfacePopup,
+              backgroundColor: bolioColors.getPopupColor(context),
               title: Text('Objekt bearbeiten'),
               content: SingleChildScrollView(
                 reverse: true,
@@ -676,7 +679,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             RaisedButton(
-                              color: BolioColors.surfaceCard,
+                              color: bolioColors.getButtonColor(context),
                               onPressed: () async {
                                 IconData icon =
                                     await FlutterIconPicker.showIconPicker(
@@ -846,6 +849,23 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                   controller: portSocketIoController,
                   decoration: InputDecoration(labelText: 'socket.io Port'),
                 ),
+                ListTile(
+                  leading: Icon(Icons.brightness_medium),
+                  title: Text('Dunkler Modus'),
+                  trailing: Switch(
+                    value: Theme.of(context).brightness == Brightness.dark,
+                    onChanged: (value) {
+                      setState(
+                        () {
+                          DynamicTheme.of(context).setBrightness(
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Brightness.light
+                                  : Brightness.dark);
+                        },
+                      );
+                    },
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.only(top: 20.0),
                   child: RaisedButton(
@@ -967,7 +987,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
       builder: (BuildContext _context) {
         return StatefulBuilder(builder: (_context, setState) {
           return AlertDialog(
-            backgroundColor: BolioColors.surfacePopup,
+            backgroundColor: bolioColors.getPopupColor(context),
             title: Text('Seite bearbeiten'),
             content: SingleChildScrollView(
               reverse: true,
@@ -1053,7 +1073,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
       builder: (BuildContext _context) {
         return StatefulBuilder(builder: (_context, setState) {
           return AlertDialog(
-            backgroundColor: BolioColors.surfacePopup,
+            backgroundColor: bolioColors.getPopupColor(context),
             title: Text('Seite anlegen'),
             content: SingleChildScrollView(
               reverse: true,
@@ -1071,7 +1091,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         RaisedButton(
-                          color: BolioColors.surfaceCard,
+                          color: bolioColors.getButtonColor(context),
                           onPressed: () async {
                             IconData icon =
                                 await FlutterIconPicker.showIconPicker(_context,

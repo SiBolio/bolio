@@ -5,12 +5,16 @@ import 'package:charts_flutter/flutter.dart' as charts;
 
 import 'package:charts_flutter/flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:smarthome/Services/colorsService.dart';
 
 class LineGraph extends StatelessWidget {
+  BolioColors bolioColors;
   final List<charts.Series> seriesList;
   final bool animate;
 
-  LineGraph(this.seriesList, {this.animate});
+  LineGraph(this.seriesList, {this.animate}) {
+    bolioColors = new BolioColors();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +30,10 @@ class LineGraph extends StatelessWidget {
             if (model.hasDatumSelection) {
               String value = model.selectedDatum[0].datum.value.toString();
               customRenderer.setValue(value);
+              customRenderer.setColor(
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Color.white
+                      : Color.black);
             }
           },
         )
@@ -39,10 +47,15 @@ class LineGraph extends StatelessWidget {
         renderSpec: new charts.GridlineRendererSpec(
           labelStyle: new charts.TextStyleSpec(
             fontSize: 18,
-            color: charts.ColorUtil.fromDartColor(Colors.white54),
+            color: charts.ColorUtil.fromDartColor(
+              bolioColors.getGraphLabelColor(context),
+            ),
           ),
           lineStyle: new charts.LineStyleSpec(
-              color: charts.ColorUtil.fromDartColor(Colors.white24)),
+            color: charts.ColorUtil.fromDartColor(
+              bolioColors.getGraphLabelColor(context),
+            ),
+          ),
         ),
         tickProviderSpec: new charts.BasicNumericTickProviderSpec(
             desiredTickCount: 2, zeroBound: false),
@@ -53,10 +66,15 @@ class LineGraph extends StatelessWidget {
 
 class CustomCircleSymbolRenderer extends charts.CircleSymbolRenderer {
   String value;
+  Color textColor;
   CustomCircleSymbolRenderer({this.value});
 
   setValue(String value) {
     this.value = value;
+  }
+
+  setColor(Color textColor) {
+    this.textColor = textColor;
   }
 
   @override
@@ -72,9 +90,9 @@ class CustomCircleSymbolRenderer extends charts.CircleSymbolRenderer {
         fill: Color.transparent);
 
     var textStyle = style.TextStyle();
-    textStyle.color = Color.white;
+    textStyle.color = textColor;
     textStyle.fontSize = 20;
     canvas.drawText(textElement.TextElement(this.value, style: textStyle),
-        (bounds.left - 10 ).round(), -2 );
+        (bounds.left - 10).round(), -2);
   }
 }

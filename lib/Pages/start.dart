@@ -6,6 +6,7 @@ import 'package:smarthome/Models/favoriteModel.dart';
 import 'package:smarthome/Models/ipAddressModel.dart';
 import 'package:smarthome/Models/pageModel.dart';
 import 'package:smarthome/Pages/allAdapterPage.dart';
+import 'package:smarthome/Services/colorsService.dart';
 import 'package:smarthome/Services/favoriteService.dart';
 import 'package:smarthome/Services/settingsService.dart';
 import 'package:smarthome/Services/socketService.dart';
@@ -90,7 +91,9 @@ class _StartPageState extends State<StartPage> {
         return null;
       },
       child: Scaffold(
-        backgroundColor: Color(0xFF121212),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? BolioColors.surface
+            : null,
         bottomNavigationBar: FutureBuilder(
           future: favoriteService.getPages(context),
           builder: (BuildContext context,
