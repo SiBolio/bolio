@@ -707,6 +707,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
               actions: <Widget>[
                 FlatButton(
                   child: Text('Abbrechen'),
+                  color: bolioColors.getButtonColor(context),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },

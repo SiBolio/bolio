@@ -25,11 +25,13 @@ class _StartPageState extends State<StartPage> {
   int _selectedIndex = 0;
   String _selectedPageId;
   SocketService socketService;
+  BolioColors _bolioColors;
 
   @override
   void initState() {
     favoriteService = new FavoriteService();
     settingsService = new SettingsService();
+    _bolioColors = new BolioColors();
     super.initState();
   }
 

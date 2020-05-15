@@ -85,8 +85,8 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
               shape: widget.setPointMin != null || widget.setPointMax != null
                   ? RoundedRectangleBorder(
                       side: new BorderSide(
-                          color: _getSetPointColorLineGraph(snapshot.data,
-                              widget.setPointMin, widget.setPointMax),
+                          color: bolioColors.getSetPointColorLineGraph(snapshot.data,
+                              widget.setPointMin, widget.setPointMax, context),
                           width: 1.0),
                       borderRadius: BorderRadius.circular(4.0),
                     )
@@ -141,7 +141,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
           if (snapshot.hasData) {
             return _getOnOffCard(snapshot.data);
           } else {
-            return Text('-');
+            return Center(child: Text('-'));
           }
         },
       );
@@ -278,7 +278,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
               widget.title,
               style: TextStyle(
                 fontSize: 16.0,
-                color: Colors.grey[400],
+                color: bolioColors.getCardFontColor(context),
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -484,17 +484,4 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
     return Colors.grey[400];
   }
 
-  _getSetPointColorLineGraph(String value, double min, double max) {
-    if (min != null) {
-      if (double.parse(value) < min) {
-        return BolioColors.dangerLine;
-      }
-    }
-    if (max != null) {
-      if (double.parse(value) > max) {
-        return BolioColors.dangerLine;
-      }
-    }
-    return BolioColors.surfaceCard;
-  }
 }

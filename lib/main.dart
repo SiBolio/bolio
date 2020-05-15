@@ -24,6 +24,7 @@ class Smarthome extends StatelessWidget {
             primaryColor: BolioColors.primary,
             accentColor: BolioColors.secondary,
             brightness: brightness,
+            primarySwatch: Colors.grey,
           );
         }
       },

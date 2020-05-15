@@ -55,4 +55,19 @@ class BolioColors {
         ? Color(0xFF1b1b1b)
         : null;
   }
+
+  Color getSetPointColorLineGraph(String value, double min, double max, context) {
+    if (min != null) {
+      if (double.parse(value) < min) {
+        return BolioColors.dangerLine;
+      }
+    }
+    if (max != null) {
+      if (double.parse(value) > max) {
+        return BolioColors.dangerLine;
+      }
+    }
+    return Theme.of(context).brightness == Brightness.dark ? BolioColors.surfaceCard: Colors.transparent;
+  }
+
 }
