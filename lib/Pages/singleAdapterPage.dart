@@ -19,19 +19,8 @@ class SingleAdapterPage extends StatefulWidget {
 
 class _SingleAdapterPageState extends State<SingleAdapterPage> {
   TextEditingController _searchQueryController = TextEditingController();
-
   bool _isSearching = false;
   String searchQuery = "";
-
-  String _currentlySelected = "Alle";
-  final List<String> _dropdownValues = [
-    "Alle",
-    "On/Off",
-    "Zahl",
-    "Wert",
-    "Text",
-    "Objekt"
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -41,58 +30,28 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
           : null,
       appBar: AppBar(
         title: _isSearching ? _buildSearchField() : Text(widget.title),
-        actions: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: DropdownButton(
-              items: _dropdownValues
-                  .map((value) => DropdownMenuItem(
-                        child: Text(value),
-                        value: value,
-                      ))
-                  .toList(),
-              onChanged: (String value) {
-                setState(() {
-                  _currentlySelected = value;
-                });
-              },
-              isExpanded: false,
-              value: _currentlySelected,
-            ),
-          )
-        ],
       ),
       body: Center(
         child: FutureBuilder(
           future: httpService.getAdapterObjects(widget.name, context),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return new CircularProgressIndicator();
-            }
-            if (snapshot.hasError) {
-              return new CircularProgressIndicator();
-            } else {
-              List<ObjectsModel> objects = snapshot.data ?? [];
-
-              if (_isSearching && this.searchQuery.length > 1) {
-                objects = queryObjects(objects);
-              }
-
-              if (_currentlySelected != 'Alle') {
-                objects = filterObjects(objects);
-              }
-
-              List<ObjectsModel> _sortedObjects = _orderAlphabetical(objects);
-
-              return ListView.builder(
-                itemCount: _sortedObjects.length,
-                itemBuilder: (context, index) {
-                  return ObjectListTile(
-                    object: _sortedObjects[index],
-                    isFavorite: _sortedObjects[index].isfavorite,
-                  );
+          builder: (BuildContext context,
+              AsyncSnapshot<List<ObjectsModel>> snapshotAdapterObjects) {
+            if (snapshotAdapterObjects.hasData) {
+              return FutureBuilder(
+                future: _getObjectList(snapshotAdapterObjects.data),
+                builder: (BuildContext context,
+                    AsyncSnapshot<StatelessWidget> snapshotObjectList) {
+                  if (snapshotObjectList.hasData &&
+                      snapshotObjectList.connectionState ==
+                          ConnectionState.done) {
+                    return snapshotObjectList.data;
+                  } else {
+                    return CircularProgressIndicator();
+                  }
                 },
               );
+            } else {
+              return CircularProgressIndicator();
             }
           },
         ),
@@ -104,6 +63,53 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
         child: Icon(Icons.search),
       ),
     );
+  }
+
+  Future<ListView> _getObjectList(List<ObjectsModel> adapterObjects) async {
+    Entry root = new Entry('root', 'root', []);
+    Entry current = root;
+
+    for (ObjectsModel adapterObject in adapterObjects) {
+      List<String> objectHierarchyIds =
+          _getObjectHierarchyIds(adapterObject.id);
+      List<String> objectHierarchyIdsFull =
+          _getObjectHierarchyIdsFull(adapterObject.id);
+
+      for (var i = 0; i < objectHierarchyIds.length; i++) {
+        bool foundEntry = false;
+        for (Entry child in current.children) {
+          if (child.id == objectHierarchyIds[i]) {
+            foundEntry = true;
+            current = child;
+          }
+        }
+        if (!foundEntry) {
+          var name = await httpService.getObjectName(objectHierarchyIdsFull[i]);
+          Entry newEntry = new Entry(
+            objectHierarchyIds[i],
+            name,
+            [],
+            i == objectHierarchyIds.length - 1
+                ? ObjectListTile(
+                    object: adapterObject,
+                    isFavorite: adapterObject.isfavorite,
+                  )
+                : null,
+          );
+          current.children.add(newEntry);
+          current = newEntry;
+        }
+      }
+      current = root;
+    }
+
+    return root.children.length != 0
+        ? ListView.builder(
+            itemBuilder: (BuildContext context, int index) =>
+                EntryItem(root.children[0]),
+            itemCount: 1,
+          )
+        : Container();
   }
 
   Widget _buildSearchField() {
@@ -141,20 +147,25 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
     return returnList;
   }
 
-  List<ObjectsModel> filterObjects(List<ObjectsModel> queryObjects) {
-    List<ObjectsModel> returnList = new List();
-    for (var object in queryObjects) {
-      if (object.typeReadable == _currentlySelected) {
-        returnList.add(object);
-      }
-    }
+  List<String> _getObjectHierarchyIds(String id) {
+    List<String> returnList = new List<String>();
+    id.split('.').forEach((element) {
+      returnList.add(element);
+    });
     return returnList;
   }
 
-  List<ObjectsModel> _orderAlphabetical(List<ObjectsModel> objects) {
-    objects
-        .sort((a, b) => a.name.toUpperCase().compareTo(b.name.toUpperCase()));
-    return objects;
+  List<String> _getObjectHierarchyIdsFull(String id) {
+    List<String> returnList = new List<String>();
+
+    id.split('.').forEach((element) {
+      returnList.add(element);
+    });
+
+    for (var i = 1; i < returnList.length; i++) {
+      returnList[i] = returnList[i - 1] + '.' + returnList[i];
+    }
+    return returnList;
   }
 }
 
@@ -170,98 +181,137 @@ class ObjectListTile extends StatefulWidget {
 
 class _ObjectListTileState extends State<ObjectListTile> {
   bool _isFavorite;
-  FavoriteService saveService = new FavoriteService();
-  IconButtonService _iconButtonSrv = new IconButtonService();
+  FavoriteService saveService;
+  IconButtonService _iconButtonSrv;
+  BolioColors _bolioColors;
 
   @override
   void initState() {
-    super.initState();
+    _bolioColors = new BolioColors();
+    saveService = new FavoriteService();
+    _iconButtonSrv = new IconButtonService();
     _isFavorite = widget.isFavorite;
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(widget.object.name),
-      subtitle: Text(widget.object.id),
-      onTap: () {
-        return showDialog<void>(
-          context: context,
-          builder: (BuildContext dialogContext) {
-            return StatefulBuilder(
-              builder: (context, setState) {
-                return AlertDialog(
-                  title: Text(widget.object.name),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text('Objekttyp: ' + widget.object.typeReadable),
-                      ),
-                      FutureBuilder(
-                        future: httpService.getObjectValue(widget.object.id),
-                        builder: (BuildContext context,
-                            AsyncSnapshot<String> snapshot) {
-                          if (snapshot.hasData) {
-                            return Center(
-                              child: Text(
-                                snapshot.data,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 38,
-                                  fontWeight: FontWeight.w400,
+    return Ink(
+      color: _bolioColors.getDropDownBackgroundColor(context),
+      child: ListTile(
+        title: Text(widget.object.name),
+        subtitle: Text(widget.object.id),
+        onTap: () {
+          return showDialog<void>(
+            context: context,
+            builder: (BuildContext dialogContext) {
+              return StatefulBuilder(
+                builder: (context, setState) {
+                  return AlertDialog(
+                    title: Text(widget.object.name),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child:
+                              Text('Objekttyp: ' + widget.object.typeReadable),
+                        ),
+                        FutureBuilder(
+                          future: httpService.getObjectValue(widget.object.id),
+                          builder: (BuildContext context,
+                              AsyncSnapshot<String> snapshot) {
+                            if (snapshot.hasData) {
+                              return Center(
+                                child: Text(
+                                  snapshot.data,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 38,
+                                    fontWeight: FontWeight.w400,
+                                  ),
                                 ),
-                              ),
-                            );
-                          } else {
-                            return CircularProgressIndicator();
-                          }
+                              );
+                            } else {
+                              return CircularProgressIndicator();
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    actions: <Widget>[
+                      FlatButton(
+                        color: Theme.of(context).accentColor,
+                        textColor: Colors.black,
+                        child: Text('Ok'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
                         },
                       ),
                     ],
-                  ),
-                  actions: <Widget>[
-                    FlatButton(
-                      color: Theme.of(context).accentColor,
-                      textColor: Colors.black,
-                      child: Text('Ok'),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-        );
-      },
-      leading: _iconButtonSrv.getItemIcon(widget.object.type),
-      trailing: IconButton(
-        color: _isFavorite ? Theme.of(context).accentColor : null,
-        icon: Icon(
-          _isFavorite ? Icons.star : Icons.star_border,
-        ),
-        onPressed: () {
-          setState(
-            () {
-              _isFavorite = !_isFavorite;
-              _isFavorite
-                  ? saveService.addObjectToFavorites(widget.object, context)
-                  : saveService.removeObjectFromFavorites(
-                      widget.object.id, context);
-              String snackBarText =
-                  _isFavorite ? 'Favorit hinzugefügt' : 'Favorit entfernt';
-              final snackBar = SnackBar(
-                content: Text(snackBarText),
+                  );
+                },
               );
-              Scaffold.of(context).showSnackBar(snackBar);
             },
           );
         },
+        leading: _iconButtonSrv.getItemIcon(widget.object.type),
+        trailing: IconButton(
+          color: _isFavorite ? Theme.of(context).accentColor : null,
+          icon: Icon(
+            _isFavorite ? Icons.star : Icons.star_border,
+          ),
+          onPressed: () {
+            setState(
+              () {
+                _isFavorite = !_isFavorite;
+                _isFavorite
+                    ? saveService.addObjectToFavorites(widget.object, context)
+                    : saveService.removeObjectFromFavorites(
+                        widget.object.id, context);
+                String snackBarText =
+                    _isFavorite ? 'Favorit hinzugefügt' : 'Favorit entfernt';
+                final snackBar = SnackBar(
+                  content: Text(snackBarText),
+                );
+                Scaffold.of(context).showSnackBar(snackBar);
+              },
+            );
+          },
+        ),
       ),
     );
+  }
+}
+
+class Entry {
+  Entry(this.id, this.title,
+      [this.children = const <Entry>[], this.objectTile]);
+
+  final String id;
+  final String title;
+  final List<Entry> children;
+  final ObjectListTile objectTile;
+}
+
+class EntryItem extends StatelessWidget {
+  const EntryItem(this.entry);
+
+  final Entry entry;
+
+  Widget _buildTiles(Entry root) {
+    if (root.children.isEmpty) return root.objectTile;
+    return ExpansionTile(
+      key: PageStorageKey<Entry>(root),
+      title: Text(root.title),
+      subtitle: root.title != root.id ? Text(root.id) : null,
+      children: root.children.map(_buildTiles).toList(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildTiles(entry);
   }
 }

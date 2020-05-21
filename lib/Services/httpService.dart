@@ -115,7 +115,7 @@ class HttpService {
             }
           }
 
-          return charts.ColorUtil.fromDartColor( BolioColors.primary);
+          return charts.ColorUtil.fromDartColor(BolioColors.primary);
         },
         domainFn: (HistoryModel history, _) => history.timestamp,
         measureFn: (HistoryModel history, _) => history.value,
@@ -129,7 +129,8 @@ class HttpService {
     this._getAllAdapters.clear();
   }
 
-  Future<List> getAdapterObjects(String adapterId, context) async {
+  Future<List<ObjectsModel>> getAdapterObjects(
+      String adapterId, context) async {
     List<FavoriteModel> _favorites =
         await favoriteService.getFavorites(context);
 
@@ -156,6 +157,38 @@ class HttpService {
       responseList.add(ioBrokerObject);
     }
     return responseList;
+  }
+
+  Future<String> getObjectName(String objectId) async {
+     IpAddressModel ipPort = await settingsService.getIpAddressPort();
+
+    var response = await http.get("http://" +
+        ipPort.ipAddress +
+        ':' +
+        ipPort.portSimpleAPI +
+        "/objects?pattern=" +
+        objectId +
+        "*&type=channel&prettyPrint");
+
+    Map<String, dynamic> parsedJson = json.decode(response.body);
+    if (parsedJson[objectId] != null) {
+      return parsedJson[objectId]['common']['name'];
+    } else {
+      var response = await http.get("http://" +
+          ipPort.ipAddress +
+          ':' +
+          ipPort.portSimpleAPI +
+          "/objects?pattern=" +
+          objectId +
+          "*&type=device&prettyPrint");
+
+      Map<String, dynamic> parsedJson = json.decode(response.body);
+      if (parsedJson[objectId] != null) {
+        return parsedJson[objectId]['common']['name'];
+      } else {
+        return objectId;
+      }
+    }
   }
 
   Future<String> getObjectValue(String objectId) async {

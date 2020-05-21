@@ -15,6 +15,7 @@ class BolioColors {
   static const surfaceCard = Color(0xFF1b1b1b);
   static const dangerCard = Color(0xFF494949);
   static const dangerLine = Color(0xFFf44336);
+  static const dropDown = Color(0xFF303030);
 
   getRandomColorLight() {
     return _randomColor.randomColor(colorBrightness: ColorBrightness.light);
@@ -38,6 +39,12 @@ class BolioColors {
     }
   }
 
+  Color getDropDownBackgroundColor(context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? dropDown
+        : Color(0xFFe0f2f1);
+  }
+
   Color getPopupColor(context) {
     return Theme.of(context).brightness == Brightness.dark
         ? Color(0xFF424242)
@@ -56,7 +63,8 @@ class BolioColors {
         : null;
   }
 
-  Color getSetPointColorLineGraph(String value, double min, double max, context) {
+  Color getSetPointColorLineGraph(
+      String value, double min, double max, context) {
     if (min != null) {
       if (double.parse(value) < min) {
         return BolioColors.dangerLine;
@@ -67,7 +75,8 @@ class BolioColors {
         return BolioColors.dangerLine;
       }
     }
-    return Theme.of(context).brightness == Brightness.dark ? BolioColors.surfaceCard: Colors.transparent;
+    return Theme.of(context).brightness == Brightness.dark
+        ? BolioColors.surfaceCard
+        : Colors.transparent;
   }
-
 }

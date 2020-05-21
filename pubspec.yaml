@@ -1,6 +1,6 @@
 name: smarthome
 
-version: 0.3.2
+version: 0.4.0
 
 environment:
   sdk: ">=2.2.2 <3.0.0"

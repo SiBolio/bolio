@@ -85,8 +85,11 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
               shape: widget.setPointMin != null || widget.setPointMax != null
                   ? RoundedRectangleBorder(
                       side: new BorderSide(
-                          color: bolioColors.getSetPointColorLineGraph(snapshot.data,
-                              widget.setPointMin, widget.setPointMax, context),
+                          color: bolioColors.getSetPointColorLineGraph(
+                              snapshot.data,
+                              widget.setPointMin,
+                              widget.setPointMax,
+                              context),
                           width: 1.0),
                       borderRadius: BorderRadius.circular(4.0),
                     )
@@ -99,13 +102,16 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                   Flexible(
                     child: Padding(
                       padding: const EdgeInsets.all(10.0),
-                      child: Text(
-                        widget.title,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 16.0,
-                          color: bolioColors.getCardFontColor(context),
-                          fontWeight: FontWeight.w400,
+                      child: FittedBox(
+                        fit: BoxFit.fitWidth,
+                        child: Text(
+                          widget.title,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            color: bolioColors.getCardFontColor(context),
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
                       ),
                     ),
@@ -179,14 +185,17 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                         Flexible(
                           child: Padding(
                             padding: const EdgeInsets.all(10.0),
-                            child: Text(
-                              widget.title,
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 16.0,
-                                color: bolioColors.getCardFontColor(context),
-                                fontWeight: FontWeight.w400,
+                            child: FittedBox(
+                              fit: BoxFit.fitWidth,
+                              child: Text(
+                                widget.title,
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 16.0,
+                                  color: bolioColors.getCardFontColor(context),
+                                  fontWeight: FontWeight.w400,
+                                ),
                               ),
                             ),
                           ),
@@ -225,7 +234,8 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                                         textAlign: TextAlign.right,
                                         style: TextStyle(
                                           fontSize: 38,
-                                          color: bolioColors.getCardFontColor(context),
+                                          color: bolioColors
+                                              .getCardFontColor(context),
                                           fontWeight: FontWeight.w400,
                                         ),
                                       ),
@@ -274,12 +284,15 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(10.0),
-            child: Text(
-              widget.title,
-              style: TextStyle(
-                fontSize: 16.0,
-                color: bolioColors.getCardFontColor(context),
-                fontWeight: FontWeight.w400,
+            child: FittedBox(
+              fit: BoxFit.fitWidth,
+              child: Text(
+                widget.title,
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: bolioColors.getCardFontColor(context),
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ),
           ),
@@ -378,13 +391,19 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
               ],
             ),
             Flexible(
-              child: Text(
-                widget.title,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 16.0,
-                  color: bolioColors.getCardFontColor(context),
-                  fontWeight: FontWeight.w400,
+              child: FittedBox(
+                fit: BoxFit.fitWidth,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8, right: 8),
+                  child: Text(
+                    widget.title,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      color: bolioColors.getCardFontColor(context),
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -423,13 +442,19 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                   ),
           ),
           Flexible(
-            child: Text(
-              widget.title,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 16.0,
-                color: bolioColors.getCardFontColor(context),
-                fontWeight: FontWeight.w400,
+            child: FittedBox(
+              fit: BoxFit.fitWidth,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8, right: 8),
+                child: Text(
+                  widget.title,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: bolioColors.getCardFontColor(context),
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
               ),
             ),
           ),
@@ -483,5 +508,4 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
     }
     return Colors.grey[400];
   }
-
 }
