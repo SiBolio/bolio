@@ -4,6 +4,7 @@ import 'package:smarthome/Models/adapterModel.dart';
 import 'package:smarthome/Models/favoriteModel.dart';
 import 'package:smarthome/Models/historyModel.dart';
 import 'package:smarthome/Models/ipAddressModel.dart';
+import 'package:smarthome/Models/nodeModel.dart';
 import 'package:smarthome/Models/objectsModel.dart';
 import 'package:smarthome/Services/colorsService.dart';
 import 'package:smarthome/Services/favoriteService.dart';
@@ -78,7 +79,7 @@ class HttpService {
     }
 
     IpAddressModel ipPort = await settingsService.getIpAddressPort();
-
+    objectId = objectId.replaceAll('#', '%23');
     var response = await http.get("http://" +
         ipPort.ipAddress +
         ':' +
@@ -159,40 +160,43 @@ class HttpService {
     return responseList;
   }
 
-  Future<String> getObjectName(String objectId) async {
-     IpAddressModel ipPort = await settingsService.getIpAddressPort();
-
+  Future<List<NodeModel>> getAdapterNodes(String adapterId) async {
+    IpAddressModel ipPort = await settingsService.getIpAddressPort();
     var response = await http.get("http://" +
         ipPort.ipAddress +
         ':' +
         ipPort.portSimpleAPI +
         "/objects?pattern=" +
-        objectId +
+        adapterId +
         "*&type=channel&prettyPrint");
 
     Map<String, dynamic> parsedJson = json.decode(response.body);
-    if (parsedJson[objectId] != null) {
-      return parsedJson[objectId]['common']['name'];
-    } else {
-      var response = await http.get("http://" +
-          ipPort.ipAddress +
-          ':' +
-          ipPort.portSimpleAPI +
-          "/objects?pattern=" +
-          objectId +
-          "*&type=device&prettyPrint");
+    List<NodeModel> responseList = new List();
 
-      Map<String, dynamic> parsedJson = json.decode(response.body);
-      if (parsedJson[objectId] != null) {
-        return parsedJson[objectId]['common']['name'];
-      } else {
-        return objectId;
-      }
+    for (var key in parsedJson.keys.toList()) {
+      responseList.add(NodeModel(
+          id: key, name: parsedJson[key]['common']['name'], type: 'channel'));
     }
+
+    response = await http.get("http://" +
+        ipPort.ipAddress +
+        ':' +
+        ipPort.portSimpleAPI +
+        "/objects?pattern=" +
+        adapterId +
+        "*&type=device&prettyPrint");
+
+    for (var key in parsedJson.keys.toList()) {
+      responseList.add(NodeModel(
+          id: key, name: parsedJson[key]['common']['name'], type: 'device'));
+    }
+
+    return responseList;
   }
 
   Future<String> getObjectValue(String objectId) async {
     IpAddressModel ipPort = await settingsService.getIpAddressPort();
+    objectId = objectId.replaceAll('#', '%23');
     var response = await http.get("http://" +
         ipPort.ipAddress +
         ':' +
@@ -209,6 +213,7 @@ class HttpService {
 
   setObjectValue(String objectId, String value) async {
     IpAddressModel ipPort = await settingsService.getIpAddressPort();
+    objectId = objectId.replaceAll('#', '%23');
     http.get("http://" +
         ipPort.ipAddress +
         ':' +

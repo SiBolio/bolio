@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smarthome/Models/nodeModel.dart';
 import 'package:smarthome/Models/objectsModel.dart';
 import 'package:smarthome/Services/colorsService.dart';
 import 'package:smarthome/Services/httpService.dart';
@@ -38,7 +39,8 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
               AsyncSnapshot<List<ObjectsModel>> snapshotAdapterObjects) {
             if (snapshotAdapterObjects.hasData) {
               return FutureBuilder(
-                future: _getObjectList(snapshotAdapterObjects.data),
+                future:
+                    _getObjectList(widget.name, snapshotAdapterObjects.data),
                 builder: (BuildContext context,
                     AsyncSnapshot<StatelessWidget> snapshotObjectList) {
                   if (snapshotObjectList.hasData &&
@@ -65,7 +67,10 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
     );
   }
 
-  Future<ListView> _getObjectList(List<ObjectsModel> adapterObjects) async {
+  Future<ListView> _getObjectList(
+      String adapterId, List<ObjectsModel> adapterObjects) async {
+    List<NodeModel> nodes = await httpService.getAdapterNodes(widget.name);
+
     Entry root = new Entry('root', 'root', []);
     Entry current = root;
 
@@ -84,10 +89,9 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
           }
         }
         if (!foundEntry) {
-          var name = await httpService.getObjectName(objectHierarchyIdsFull[i]);
           Entry newEntry = new Entry(
             objectHierarchyIds[i],
-            name,
+            _getNodeName(objectHierarchyIdsFull[i], nodes),
             [],
             i == objectHierarchyIds.length - 1
                 ? ObjectListTile(
@@ -119,7 +123,10 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
       decoration: InputDecoration(
         hintText: widget.title + ' durchsuchen',
         border: InputBorder.none,
-        hintStyle: TextStyle(color: Colors.white30),
+        hintStyle: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white30
+                : Colors.black),
       ),
       onChanged: (query) {
         setState(() {
@@ -166,6 +173,15 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
       returnList[i] = returnList[i - 1] + '.' + returnList[i];
     }
     return returnList;
+  }
+
+  String _getNodeName(String objectsId, List<NodeModel> nodes) {
+    for (var node in nodes) {
+      if (node.id == objectsId) {
+        return node.name;
+      }
+    }
+    return objectsId;
   }
 }
 

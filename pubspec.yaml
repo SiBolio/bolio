@@ -23,6 +23,11 @@ dependencies:
   random_color: ^1.0.5
   local_auth: ^0.6.2+1
   dynamic_theme: ^1.0.1
+  html: ^0.14.0+3
+  path_provider: ^1.6.8
+  esys_flutter_share: ^1.0.2
+  file_picker: ^1.9.0+1
+
 
 
 

@@ -867,6 +867,25 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                     },
                   ),
                 ),
+                ListTile(
+                  leading: Icon(Icons.share),
+                  title: Text('Einstellungen exportieren'),
+                  onTap: () {
+                    settingsService.exportSettings();
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.file_upload),
+                  title: Text('Einstellungen importieren'),
+                  onTap: () {
+                    settingsService.importSettings().then((hasImported) {
+                      final snackBar = SnackBar(
+                        content: Text('Einstellungen wurden importiert'),
+                      );
+                      Scaffold.of(context).showSnackBar(snackBar);
+                    });
+                  },
+                ),
                 Padding(
                   padding: const EdgeInsets.only(top: 20.0),
                   child: RaisedButton(
