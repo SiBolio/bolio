@@ -17,6 +17,13 @@ class BolioColors {
   static const dangerLine = Color(0xFFf44336);
   static const dropDown = Color(0xFF303030);
 
+
+  Color getGaugeInactivColor(context) {
+     return Theme.of(context).brightness == Brightness.dark
+        ? Colors.grey[700]
+        : Colors.grey[400];
+  }
+
   getRandomColorLight() {
     return _randomColor.randomColor(colorBrightness: ColorBrightness.light);
   }
@@ -53,7 +60,7 @@ class BolioColors {
 
   Color getGraphLabelColor(context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.grey[200]
+        ? Colors.grey[400]
         : Colors.grey[700];
   }
 
@@ -79,4 +86,17 @@ class BolioColors {
         ? BolioColors.surfaceCard
         : Colors.transparent;
   }
+
+  Color getNavigationCanvas(context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Color(0xFF1b1b1b)
+        : Colors.grey[100];
+  }
+
+  Color getNavigationInactiv(context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.grey[400]
+        : Colors.grey[600];
+  }
+
 }

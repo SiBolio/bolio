@@ -20,8 +20,6 @@ class SingleAdapterPage extends StatefulWidget {
 
 class _SingleAdapterPageState extends State<SingleAdapterPage> {
   TextEditingController _searchQueryController = TextEditingController();
-  bool _isSearching = false;
-  String searchQuery = "";
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +28,7 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
           ? BolioColors.surface
           : null,
       appBar: AppBar(
-        title: _isSearching ? _buildSearchField() : Text(widget.title),
+        title: Text(widget.title),
       ),
       body: Center(
         child: FutureBuilder(
@@ -47,6 +45,10 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
                       snapshotObjectList.connectionState ==
                           ConnectionState.done) {
                     return snapshotObjectList.data;
+                  } else if (snapshotObjectList.connectionState ==
+                          ConnectionState.done &&
+                      !snapshotObjectList.hasData) {
+                    return Text('Keine Datenpunkte gefunden');
                   } else {
                     return CircularProgressIndicator();
                   }
@@ -57,12 +59,6 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
             }
           },
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _startSearch();
-        },
-        child: Icon(Icons.search),
       ),
     );
   }
@@ -110,49 +106,12 @@ class _SingleAdapterPageState extends State<SingleAdapterPage> {
     return root.children.length != 0
         ? ListView.builder(
             itemBuilder: (BuildContext context, int index) =>
-                EntryItem(root.children[0]),
+                EntryItem(root.children[0], context),
             itemCount: 1,
           )
         : Container();
   }
 
-  Widget _buildSearchField() {
-    return TextField(
-      controller: _searchQueryController,
-      autofocus: true,
-      decoration: InputDecoration(
-        hintText: widget.title + ' durchsuchen',
-        border: InputBorder.none,
-        hintStyle: TextStyle(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white30
-                : Colors.black),
-      ),
-      onChanged: (query) {
-        setState(() {
-          this.searchQuery = query;
-        });
-      },
-    );
-  }
-
-  void _startSearch() {
-    setState(() {
-      _isSearching = true;
-    });
-  }
-
-  List<ObjectsModel> queryObjects(List<ObjectsModel> queryObjects) {
-    List<ObjectsModel> returnList = new List();
-    for (var object in queryObjects) {
-      if (object.desc.contains(this.searchQuery) ||
-          object.id.contains(this.searchQuery) ||
-          object.name.contains(this.searchQuery)) {
-        returnList.add(object);
-      }
-    }
-    return returnList;
-  }
 
   List<String> _getObjectHierarchyIds(String id) {
     List<String> returnList = new List<String>();
@@ -312,7 +271,12 @@ class Entry {
 }
 
 class EntryItem extends StatelessWidget {
-  const EntryItem(this.entry);
+  BolioColors _bolioColors;
+  var _context;
+
+  EntryItem(this.entry, this._context) {
+    _bolioColors = new BolioColors();
+  }
 
   final Entry entry;
 
@@ -320,8 +284,26 @@ class EntryItem extends StatelessWidget {
     if (root.children.isEmpty) return root.objectTile;
     return ExpansionTile(
       key: PageStorageKey<Entry>(root),
-      title: Text(root.title),
-      subtitle: root.title != root.id ? Text(root.id) : null,
+      leading: ClipOval(
+        child: Material(
+          color: _bolioColors.getDropDownBackgroundColor(_context),
+          child: InkWell(
+            splashColor: Colors.red,
+            child: SizedBox(
+              width: 30,
+              height: 30,
+              child: Center(
+                child: Text(
+                  root.children.length.toString(),
+                  style: new TextStyle(fontSize: 14.0),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+      title:
+          Text(root.title, style: new TextStyle(fontWeight: FontWeight.w500)),
       children: root.children.map(_buildTiles).toList(),
     );
   }

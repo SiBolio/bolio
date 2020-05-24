@@ -3,7 +3,9 @@ import 'package:smarthome/Services/colorsService.dart';
 import 'package:smarthome/Services/httpService.dart';
 import 'package:smarthome/Services/securityService.dart';
 import 'package:smarthome/Services/socketService.dart';
+import 'gaugeGraph.dart';
 import 'lineGraph.dart';
+import 'barGraph.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class SmarthomeCard extends StatefulWidget {
@@ -19,6 +21,7 @@ class SmarthomeCard extends StatefulWidget {
   final IO.Socket socket;
   final bool secured;
   final int icon;
+  final String graphType;
 
   SmarthomeCard({
     this.id,
@@ -33,6 +36,7 @@ class SmarthomeCard extends StatefulWidget {
     this.socket,
     this.secured,
     this.icon,
+    this.graphType,
   });
 
   SocketService socketSrv;
@@ -164,12 +168,13 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
           }
         },
       );
-    } else if (widget.objectType == 'Graph') {
+    } else if (widget.objectType == 'Graph' &&
+        (widget.graphType == null || widget.graphType == 'Linien')) {
       widget.socketSrv
           .getObjectValue(widget.id, widget.setPointMin, widget.setPointMax);
       return Center(
         child: FutureBuilder(
-          future: http.getHistory(widget.id, widget.timeSpan,
+          future: http.getHistoryLine(widget.id, widget.timeSpan,
               widget.setPointMin, widget.setPointMax),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
@@ -245,6 +250,187 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                                   }
                                 },
                               ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return CircularProgressIndicator();
+            }
+          },
+        ),
+      );
+    } else if (widget.objectType == 'Graph' && widget.graphType == 'Balken') {
+      widget.socketSrv
+          .getObjectValue(widget.id, widget.setPointMin, widget.setPointMax);
+      return Center(
+        child: FutureBuilder(
+          future: http.getHistoryBar(widget.id, widget.timeSpan,
+              widget.setPointMin, widget.setPointMax),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (snapshot.hasData) {
+              return Card(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? BolioColors.surfaceCard
+                    : null,
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: FittedBox(
+                              fit: BoxFit.fitWidth,
+                              child: Text(
+                                widget.title,
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 16.0,
+                                  color: bolioColors.getCardFontColor(context),
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Flexible(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            flex: 7,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 10.0),
+                              child: BarGraph(snapshot.data),
+                            ),
+                          ),
+                          Visibility(
+                            visible:
+                                _isValueVisibleInGraphTile(widget.tileSize),
+                            child: Flexible(
+                              flex: 3,
+                              child: StreamBuilder(
+                                stream:
+                                    widget.socketSrv.streamController.stream,
+                                builder: (BuildContext context,
+                                    AsyncSnapshot<String> socketSnapshot) {
+                                  if (socketSnapshot.hasData) {
+                                    return Padding(
+                                      padding:
+                                          const EdgeInsets.only(right: 10.0),
+                                      child: Text(
+                                        socketSnapshot.data,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.right,
+                                        style: TextStyle(
+                                          fontSize: 38,
+                                          color: bolioColors
+                                              .getCardFontColor(context),
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    return CircularProgressIndicator();
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return CircularProgressIndicator();
+            }
+          },
+        ),
+      );
+    } else if (widget.objectType == 'Graph' && widget.graphType == 'Gauge') {
+      widget.socketSrv
+          .getObjectValue(widget.id, widget.setPointMin, widget.setPointMax);
+      return Center(
+        child: FutureBuilder(
+          future: http.getGauge(
+              widget.id, widget.setPointMin, widget.setPointMax, context),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (snapshot.hasData) {
+              return Card(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? BolioColors.surfaceCard
+                    : null,
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: FittedBox(
+                              fit: BoxFit.fitWidth,
+                              child: Text(
+                                widget.title,
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 16.0,
+                                  color: bolioColors.getCardFontColor(context),
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Flexible(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            flex: 7,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 10.0),
+                              child: Stack(children: [
+                                GaugeGraph(snapshot.data),
+                                Center(
+                                  child: StreamBuilder(
+                                    stream: widget
+                                        .socketSrv.streamController.stream,
+                                    builder: (BuildContext context,
+                                        AsyncSnapshot<String> snapshot) {
+                                      if (snapshot.hasData) {
+                                        return Text(
+                                          snapshot.data,
+                                          style: TextStyle(
+                                            fontSize: 18.0,
+                                            color: bolioColors
+                                                .getCardFontColor(context),
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        );
+                                      } else {
+                                        return Text('-');
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ]),
                             ),
                           ),
                         ],

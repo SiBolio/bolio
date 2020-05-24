@@ -11,6 +11,7 @@ class FavoriteModel {
   String pageId;
   int icon;
   bool secured;
+  String graphType;
 
   FavoriteModel(
       {this.id,
@@ -24,7 +25,8 @@ class FavoriteModel {
       this.setPointMax,
       this.pageId,
       this.secured,
-      this.icon});
+      this.icon,
+      this.graphType});
 
   factory FavoriteModel.fromJson(Map<String, dynamic> json) {
     return FavoriteModel(
@@ -42,6 +44,7 @@ class FavoriteModel {
       pageId: json['pageId'] != null ? json['pageId'] : null,
       secured: json['secured'] != null ? json['secured'] : false,
       icon: json['icon'] != null ? json['icon'] : null,
+      graphType: json['graphType'] != null ? json['graphType']: 'Linien',
     );
   }
 
@@ -58,6 +61,7 @@ class FavoriteModel {
         'pageId': pageId,
         'secured': secured,
         'icon': icon,
+        'graphType': graphType,
       };
 
   setSecured(bool secured) {
@@ -106,5 +110,9 @@ class FavoriteModel {
     } else {
       this.icon = null;
     }
+  }
+
+  setGraphType(String graphType) {
+    this.graphType = graphType;
   }
 }

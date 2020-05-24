@@ -143,6 +143,7 @@ class FavoriteService {
                     null,
                     favorite.secured,
                     favorite.icon != null ? favorite.icon.toString() : null,
+                    favorite.graphType,
                     context)
               }
           }
@@ -184,6 +185,7 @@ class FavoriteService {
     String pageId,
     bool secured,
     String icon,
+    String graphType,
     context,
   ) async {
     if (timeSpan == null) {
@@ -201,6 +203,7 @@ class FavoriteService {
         favorite.setPageId(pageId);
         favorite.setSecured(secured);
         favorite.setIcon(icon);
+        favorite.setGraphType(graphType);
       }
     }
     var prefs = await SharedPreferences.getInstance();

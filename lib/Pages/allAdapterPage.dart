@@ -419,6 +419,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
         }
 
         GlobalKey<FormState> _setpointMinKey = GlobalKey();
+        GlobalKey<FormState> _setpointMaxKey = GlobalKey();
 
         List _isSelected = <bool>[
           object.tileSize == 'S',
@@ -428,6 +429,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
 
         String _isSelectedDropdownObjectType = object.objectType;
         String _isSelectedDropdownTimespan = object.timeSpan;
+        String _isSelectedDropdownGraphType = object.graphType;
         String _isSelectedDropdownPage = object.pageId;
         bool _isSecured = object.secured;
 
@@ -561,13 +563,46 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            Text('Graphtyp: '),
+                            DropdownButton<String>(
+                              value: _isSelectedDropdownGraphType,
+                              items: <String>[
+                                'Linien',
+                                'Balken',
+                                'Gauge',
+                              ].map((String value) {
+                                return new DropdownMenuItem<String>(
+                                  value: value,
+                                  child: new Text(value),
+                                );
+                              }).toList(),
+                              onChanged: (String newValue) {
+                                setState(
+                                  () {
+                                    _isSelectedDropdownGraphType = newValue;
+                                  },
+                                );
+                              },
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    Visibility(
+                      visible: _isSelectedDropdownObjectType == 'Graph' &&
+                          _isSelectedDropdownGraphType != 'Gauge',
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
                             Text('Zeitraum: '),
                             DropdownButton<String>(
                               value: _isSelectedDropdownTimespan,
                               items: <String>[
                                 '24 Stunden',
                                 '7 Tage',
-                                '30 Tag',
+                                '30 Tage',
                               ].map((String value) {
                                 return new DropdownMenuItem<String>(
                                   value: value,
@@ -590,7 +625,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                       visible: _isSelectedDropdownObjectType == 'Einzelwert' ||
                           _isSelectedDropdownObjectType == 'Graph',
                       child: Padding(
-                        padding: const EdgeInsets.only(bottom: 10, top: 30.0),
+                        padding: const EdgeInsets.only(bottom: 5, top: 28.0),
                         child: Row(
                           children: [
                             Expanded(
@@ -613,10 +648,18 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                                 key: _setpointMinKey,
                                 child: TextFormField(
                                   validator: (value) {
+                                    if (_isSelectedDropdownObjectType ==
+                                            'Graph' &&
+                                        _isSelectedDropdownGraphType ==
+                                            'Gauge') {
+                                      if (value == '') {
+                                        return 'Minimum fehlt';
+                                      }
+                                    }
                                     if ((value != '') &&
                                         (setpointMaxController.text != '')) {
-                                      if (int.parse(value) >=
-                                          int.parse(
+                                      if (double.parse(value) >=
+                                          double.parse(
                                               setpointMaxController.text)) {
                                         return 'Falscher Sollbereich';
                                       }
@@ -635,14 +678,25 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                             flex: 2,
                             child: Padding(
                               padding: const EdgeInsets.only(left: 8, right: 8),
-                              child: TextFormField(
-                                validator: (value) {
-                                  return null;
-                                },
-                                keyboardType: TextInputType.number,
-                                controller: setpointMaxController,
-                                decoration:
-                                    InputDecoration(labelText: 'Maximum'),
+                              child: Form(
+                                key: _setpointMaxKey,
+                                child: TextFormField(
+                                  validator: (value) {
+                                    if (_isSelectedDropdownObjectType ==
+                                            'Graph' &&
+                                        _isSelectedDropdownGraphType ==
+                                            'Gauge') {
+                                      if (value == '') {
+                                        return 'Maximum fehlt';
+                                      }
+                                    }
+                                    return null;
+                                  },
+                                  keyboardType: TextInputType.number,
+                                  controller: setpointMaxController,
+                                  decoration:
+                                      InputDecoration(labelText: 'Maximum'),
+                                ),
                               ),
                             ),
                           ),
@@ -716,8 +770,12 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                   child: Text('Speichern'),
                   color: BolioColors.primary,
                   onPressed: () async {
-                    if (_isSelectedDropdownObjectType == 'Einzelwert') {
+                    if (_isSelectedDropdownObjectType == 'Einzelwert' ||
+                        _isSelectedDropdownObjectType == 'Graph') {
                       if (!_setpointMinKey.currentState.validate()) {
+                        return null;
+                      }
+                      if (!_setpointMaxKey.currentState.validate()) {
                         return null;
                       }
                     }
@@ -749,6 +807,7 @@ class _AllAdapterPageState extends State<AllAdapterPage>
                           _isSelectedDropdownPage,
                           _isSecured,
                           _icon,
+                          _isSelectedDropdownGraphType,
                           context,
                         );
                       },

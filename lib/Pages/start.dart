@@ -151,6 +151,7 @@ class _StartPageState extends State<StartPage> {
                           socket: socket,
                           secured: favorites[index].secured,
                           icon: favorites[index].icon,
+                          graphType: favorites[index].graphType,
                         ),
                       ),
                       staggeredTileBuilder: (int index) {
@@ -299,6 +300,9 @@ class _StartPageState extends State<StartPage> {
       onTap: _onItemTapped,
       currentIndex: _selectedIndex,
       items: _navigationItems,
+      unselectedItemColor: _bolioColors.getNavigationInactiv(context),
+      selectedItemColor: BolioColors.primary,
+      backgroundColor: _bolioColors.getNavigationCanvas(context),
     );
   }
 
