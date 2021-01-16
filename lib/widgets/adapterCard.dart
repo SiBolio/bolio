@@ -31,7 +31,7 @@ class AdapterCard extends StatelessWidget {
                 adapter.iconUrl,
                 errorBuilder: (BuildContext context, Object exception,
                     StackTrace stackTrace) {
-                  return Text('-');
+                  return Text(' - ');
                 },
               ),
             ),
