@@ -1,0 +1,126 @@
+import 'dart:convert';
+import 'package:bolio/models/adapterModel.dart';
+import 'package:bolio/models/historyModel.dart';
+import 'package:bolio/models/objectModel.dart';
+import 'package:bolio/widgets/newWidgetStepper.dart';
+import 'package:http/http.dart' as http;
+import 'package:bolio/services/globals.dart' as globals;
+
+class HttpService {
+  Future<List<AdapterModel>> getAllAdapters() async {
+    var response = await http.get("http://" +
+        globals.ipAddress +
+        ':' +
+        globals.httpPort +
+        "/objects?type=adapter&prettyPrint");
+
+    Map<String, dynamic> parsedJson = json.decode(response.body);
+    List<AdapterModel> responseList = [];
+
+    AdapterModel aliasModel = new AdapterModel(
+        'alias.0',
+        'alias.0',
+        'Alias Objekte',
+        'https://raw.githubusercontent.com/ioBroker/ioBroker.admin/master/admin/admin.png',
+        'Stammordner für Aliase');
+    responseList.add(aliasModel);
+
+    AdapterModel userDataModel = new AdapterModel(
+        '0_userdata.0',
+        '0_userdata.0',
+        'Benutzerobjekte',
+        'https://raw.githubusercontent.com/ioBroker/ioBroker.admin/master/admin/admin.png',
+        'Stammordner für Benutzerobjekte und Dateien');
+    responseList.add(userDataModel);
+
+    for (var key in parsedJson.keys.toList()) {
+      var ioBrokerObject = AdapterModel.fromJson(parsedJson[key]);
+      responseList.add(ioBrokerObject);
+    }
+
+    return responseList;
+  }
+
+  Future<List<ObjectsModel>> getAdapterObjects(String adapterId) async {
+    var response = await http.get("http://" +
+        globals.ipAddress +
+        ':' +
+        globals.httpPort +
+        "/objects?pattern=" +
+        adapterId +
+        "*&type=state&prettyPrint");
+
+    Map<String, dynamic> parsedJson = json.decode(response.body);
+    List<ObjectsModel> responseList = [];
+
+    for (var key in parsedJson.keys.toList()) {
+      var ioBrokerObject = ObjectsModel.fromJson(parsedJson[key]);
+      responseList.add(ioBrokerObject);
+    }
+    return responseList;
+  }
+
+  Future<List<NodeModel>> getAdapterNodes(String adapterId) async {
+    var response = await http.get("http://" +
+        globals.ipAddress +
+        ':' +
+        globals.httpPort +
+        "/objects?pattern=" +
+        adapterId +
+        "*&type=channel&prettyPrint");
+
+    Map<String, dynamic> parsedJson = json.decode(response.body);
+    List<NodeModel> responseList = [];
+
+    for (var key in parsedJson.keys.toList()) {
+      responseList.add(NodeModel(
+          id: key, name: parsedJson[key]['common']['name'], type: 'channel'));
+    }
+
+    response = await http.get("http://" +
+        globals.ipAddress +
+        ':' +
+        globals.httpPort +
+        "/objects?pattern=" +
+        adapterId +
+        "*&type=device&prettyPrint");
+
+    parsedJson = json.decode(response.body);
+    for (var key in parsedJson.keys.toList()) {
+      responseList.add(NodeModel(
+          id: key, name: parsedJson[key]['common']['name'], type: 'device'));
+    }
+    return responseList;
+  }
+
+  Future<List<HistoryModel>> getHistory(String objectId) async {
+    List<HistoryModel> historyList = new List();
+
+    DateTime now = new DateTime.now();
+    DateTime from = now.subtract(Duration(days: 30));
+
+    objectId = objectId.replaceAll('#', '%23');
+    var response = await http.get("http://" +
+        globals.ipAddress +
+        ':' +
+        globals.httpPort +
+        "/query/" +
+        objectId +
+        "/?prettyPrint&dateFrom=" +
+        from.toString() +
+        "&dateTo=" +
+        now.toString());
+
+    Iterable l = json.decode(response.body);
+    for (var item in l.elementAt(0)['datapoints']) {
+      if (item[0] != null) {
+        var historyModel = HistoryModel(
+          DateTime.fromMillisecondsSinceEpoch(item[1]),
+          item[0].toDouble(),
+        );
+        historyList.add(historyModel);
+      }
+    }
+    return historyList;
+  }
+}
