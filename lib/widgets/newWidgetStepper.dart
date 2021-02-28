@@ -1,16 +1,23 @@
-import 'package:bolio/models/adapterModel.dart';
+/* import 'package:bolio/models/adapterModel.dart';
 import 'package:bolio/services/colorService.dart';
 import 'package:bolio/services/httpService.dart';
-import 'package:bolio/widgets/adapterCard.dart';
+import 'package:bolio/services/saveService.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:bolio/models/objectModel.dart';
 
 class NewWidgetStepper extends StatefulWidget {
+  HttpService httpService;
+  SaveService saveService;
+
   @override
   NewWidgetStepperState createState() => NewWidgetStepperState();
 
-  HttpService httpService = new HttpService();
+  NewWidgetStepper() {
+    this.httpService = new HttpService();
+    this.saveService = new SaveService();
+  }
 }
 
 class NewWidgetStepperState extends State<NewWidgetStepper> {
@@ -23,36 +30,57 @@ class NewWidgetStepperState extends State<NewWidgetStepper> {
   String selectedWidgetSize = '';
   String widgetName = '';
 
-  static const widgetTypeSingleValue = 'Einzelwert';
-  static const widgetTypeGraph = 'Graph';
-  static const widgetTypeOnOffButton = 'On/Off Button';
-  static const widgetTypeSlider = 'Slider';
+  static const conSingleValue = 'Einzelwert';
+  static const conGraph = 'Graph';
+  static const conOnOffButton = 'On/Off Button';
+  static const conSlider = 'Slider';
 
-  static const widgetSizeLarge = 'Breit';
-  static const widgetSizeStandard = 'Standard';
+  static const widgetSizeLarge = 'L';
+  static const widgetSizeStandard = 'M';
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Step>>(
-      future: _getSteps(),
-      builder: (BuildContext context, AsyncSnapshot<List<Step>> _steps) {
-        if (_steps.hasData && _steps.connectionState == ConnectionState.done) {
-          this.steps = _steps.data;
-          return Stepper(
-            controlsBuilder: (BuildContext context,
-                {VoidCallback onStepContinue, VoidCallback onStepCancel}) {
-              return Center();
-            },
-            steps: _steps.data,
-            currentStep: currentStep,
-            onStepContinue: next,
-            onStepTapped: (step) => goTo(step),
-            onStepCancel: cancel,
-          );
-        } else {
-          return Center(child: CircularProgressIndicator());
-        }
-      },
+    return Scaffold(
+      backgroundColor: ColorSerivce.surface,
+      appBar: AppBar(
+        title: Text('Neues Widget'),
+      ),
+      body: FutureBuilder<List<Step>>(
+        future: _getSteps(),
+        builder: (BuildContext context, AsyncSnapshot<List<Step>> _steps) {
+          if (_steps.hasData &&
+              _steps.connectionState == ConnectionState.done) {
+            this.steps = _steps.data;
+            return Stepper(
+              controlsBuilder: (BuildContext context,
+                  {VoidCallback onStepContinue, VoidCallback onStepCancel}) {
+                return Center();
+              },
+              steps: _steps.data,
+              currentStep: currentStep,
+              onStepContinue: next,
+              onStepTapped: (step) => goTo(step),
+              onStepCancel: cancel,
+            );
+          } else {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        },
+      ),
+      floatingActionButton: Visibility(
+        visible: selectedWidgetSize != '',
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            widget.saveService.saveWidget(widgetName, selectedObjectId,
+                selectedWidgetType, selectedWidgetSize);
+          },
+          label: Text('Widget speichern'),
+          icon: Icon(Icons.save),
+          backgroundColor: ColorSerivce.constMainColor,
+        ),
+      ),
     );
   }
 
@@ -76,131 +104,39 @@ class NewWidgetStepperState extends State<NewWidgetStepper> {
     setState(() {
       selectedObjectId = objectId;
     });
-    goTo(2);
-  }
-
-  Future<List<AdapterCard>> _getAdapterCards() async {
-    List<AdapterCard> _adapterCards = [];
-    List<AdapterModel> _adapters = await widget.httpService.getAllAdapters();
-
-    for (var _adapter in _adapters) {
-      _adapterCards.add(AdapterCard(
-        _adapter,
-      ));
-    }
-    return _adapterCards;
+    goTo(3);
   }
 
   Future<List<Step>> _getSteps() async {
     return [
       Step(
-        title: Text('Adapter'),
-        subtitle: selectedAdapterName == ''
-            ? Text('Wählen sie einen Adapter aus')
-            : Text(selectedAdapterName),
-        isActive: true,
-        state: _getStepState('Adapter'),
-        content: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.6,
-          child: FutureBuilder<List<AdapterCard>>(
-            future: _getAdapterCards(),
-            builder: (BuildContext context,
-                AsyncSnapshot<List<AdapterCard>> _adapterCards) {
-              if (_adapterCards.hasData &&
-                  _adapterCards.connectionState == ConnectionState.done) {
-                return StaggeredGridView.countBuilder(
-                  crossAxisCount: 3,
-                  itemCount: _adapterCards.data.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(4.0),
-                      splashColor: Colors.amber,
-                      onTap: () {
-                        selectedAdapterName =
-                            _adapterCards.data[index].adapter.name;
-                        goTo(1);
-                      },
-                      child: _adapterCards.data[index],
-                    );
-                  },
-                  staggeredTileBuilder: (int index) {
-                    return StaggeredTile.count(1, 1);
-                  },
-                  mainAxisSpacing: 2.0,
-                  crossAxisSpacing: 2.0,
-                );
-              } else {
-                return Center(child: CircularProgressIndicator());
-              }
-            },
-          ),
-        ),
-      ),
-      Step(
-        title: Text('Datenpunkt'),
-        subtitle: selectedObjectId == ''
-            ? Text('Wählen sie einen Datenpunkt für das Widget aus')
-            : Text(selectedObjectId),
-        isActive: selectedAdapterName == '' ? false : true,
-        state: _getStepState('Datenpunkt'),
-        content: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.6,
-          child: FutureBuilder(
-            future: widget.httpService.getAdapterObjects(selectedAdapterName),
-            builder: (BuildContext context,
-                AsyncSnapshot<List<ObjectsModel>> snapshotAdapterObjects) {
-              if (snapshotAdapterObjects.hasData) {
-                return FutureBuilder(
-                  future: _getObjectList(
-                      selectedAdapterName, snapshotAdapterObjects.data),
-                  builder: (BuildContext context,
-                      AsyncSnapshot<StatelessWidget> snapshotObjectList) {
-                    if (snapshotObjectList.hasData &&
-                        snapshotObjectList.connectionState ==
-                            ConnectionState.done) {
-                      return snapshotObjectList.data;
-                    } else if (snapshotObjectList.connectionState ==
-                            ConnectionState.done &&
-                        !snapshotObjectList.hasData) {
-                      return Text('Keine Datenpunkte gefunden');
-                    } else {
-                      return Center(child: CircularProgressIndicator());
-                    }
-                  },
-                );
-              } else {
-                return Center(child: CircularProgressIndicator());
-              }
-            },
-          ),
-        ),
-      ),
-      Step(
         title: Text('Widgettyp'),
         subtitle: selectedWidgetType == ''
             ? Text('Wählen sie den Typ des Widgets')
             : Text(selectedWidgetType),
-        isActive: selectedObjectId == '' ? false : true,
+        isActive: true,
         state: _getStepState('Widgettyp'),
         content: SizedBox(
-            height: MediaQuery.of(context).size.height * 0.4,
-            child: new StaggeredGridView.count(
-              crossAxisCount: 4,
-              staggeredTiles: [
-                StaggeredTile.count(2, 2),
-                StaggeredTile.count(2, 2),
-                StaggeredTile.count(2, 2),
-                StaggeredTile.count(2, 2)
-              ],
-              children: _getWidgetTypeCards(),
-              mainAxisSpacing: 4.0,
-              crossAxisSpacing: 4.0,
-              padding: const EdgeInsets.all(4.0),
-            )),
+          height: MediaQuery.of(context).size.height * 0.25,
+          child: new StaggeredGridView.count(
+            crossAxisCount: 3,
+            staggeredTiles: [
+              StaggeredTile.count(1, 1),
+              StaggeredTile.count(1, 1),
+              StaggeredTile.count(1, 1),
+              StaggeredTile.count(1, 1),
+              StaggeredTile.count(1, 1)
+            ],
+            children: _getWidgetTypeCards(),
+            mainAxisSpacing: 4.0,
+            crossAxisSpacing: 4.0,
+            padding: const EdgeInsets.all(4.0),
+          ),
+        ),
       ),
       Step(
         title: Text('Weitere Einstellungen'),
-        isActive: selectedWidgetSize == '' ? false : true,
+        isActive: selectedObjectId == '' ? false : true,
         state: _getStepState('Weitere Einstellungen'),
         content: Column(
           children: [
@@ -219,21 +155,25 @@ class NewWidgetStepperState extends State<NewWidgetStepper> {
         subtitle: selectedWidgetSize == ''
             ? Text('Wählen sie die Größe des Widgets')
             : Text(selectedWidgetSize),
-        isActive: selectedWidgetType == '' ? false : true,
+        isActive: selectedWidgetSize == '' ? false : true,
         state: _getStepState('Widgetgröße'),
-        content: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.4,
-          child: new StaggeredGridView.count(
-            crossAxisCount: 4,
-            staggeredTiles: [
-              StaggeredTile.count(4, 2),
-              StaggeredTile.count(2, 2),
-            ],
-            children: _getWidgetSizeCards(),
-            mainAxisSpacing: 4.0,
-            crossAxisSpacing: 4.0,
-            padding: const EdgeInsets.all(4.0),
-          ),
+        content: Column(
+          children: [
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.4,
+              child: new StaggeredGridView.count(
+                crossAxisCount: 3,
+                staggeredTiles: [
+                  StaggeredTile.count(3, 1.5),
+                  StaggeredTile.count(1, 1),
+                ],
+                children: _getWidgetSizeCards(),
+                mainAxisSpacing: 2.0,
+                crossAxisSpacing: 2.0,
+                padding: const EdgeInsets.all(4.0),
+              ),
+            ),
+          ],
         ),
       ),
     ];
@@ -241,130 +181,7 @@ class NewWidgetStepperState extends State<NewWidgetStepper> {
 
   List<Widget> _getWidgetTypeCards() {
     return [
-      InkWell(
-        borderRadius: BorderRadius.circular(4.0),
-        splashColor: Colors.amber,
-        onTap: () {
-          selectedWidgetType = widgetTypeSingleValue;
-          goTo(3);
-        },
-        child: Card(
-          color: ColorSerivce.surfaceCard,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.looks_two,
-                color: Colors.white,
-                size: 40.0,
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'Einzelwert',
-                  textAlign: TextAlign.center,
-                  style: new TextStyle(
-                    fontSize: 14.0,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      InkWell(
-        borderRadius: BorderRadius.circular(4.0),
-        splashColor: Colors.amber,
-        onTap: () {
-          selectedWidgetType = widgetTypeGraph;
-          goTo(3);
-        },
-        child: Card(
-          color: ColorSerivce.surfaceCard,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.bar_chart_sharp,
-                color: Colors.white,
-                size: 40.0,
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'Graph',
-                  textAlign: TextAlign.center,
-                  style: new TextStyle(
-                    fontSize: 14.0,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      InkWell(
-        borderRadius: BorderRadius.circular(4.0),
-        splashColor: Colors.amber,
-        onTap: () {
-          selectedWidgetType = widgetTypeOnOffButton;
-          goTo(3);
-        },
-        child: Card(
-          color: ColorSerivce.surfaceCard,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.power_settings_new,
-                color: Colors.white,
-                size: 40.0,
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'On/Off Button',
-                  textAlign: TextAlign.center,
-                  style: new TextStyle(
-                    fontSize: 14.0,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      InkWell(
-        borderRadius: BorderRadius.circular(4.0),
-        splashColor: Colors.amber,
-        onTap: () {
-          selectedWidgetType = widgetTypeSlider;
-          goTo(3);
-        },
-        child: Card(
-          color: ColorSerivce.surfaceCard,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.swipe,
-                color: Colors.white,
-                size: 40.0,
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'Slider',
-                  textAlign: TextAlign.center,
-                  style: new TextStyle(
-                    fontSize: 14.0,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      
     ];
   }
 
@@ -372,16 +189,23 @@ class NewWidgetStepperState extends State<NewWidgetStepper> {
     return [
       InkWell(
         borderRadius: BorderRadius.circular(4.0),
-        splashColor: Colors.amber,
+        splashColor: ColorSerivce.constMainColor,
         onTap: () {
           selectedWidgetSize = widgetSizeLarge;
           goTo(4);
         },
         child: Card(
+          shape: selectedWidgetSize == widgetSizeLarge
+              ? new RoundedRectangleBorder(
+                  side: new BorderSide(
+                      color: ColorSerivce.constMainColor, width: 2.0),
+                  borderRadius: BorderRadius.circular(4.0),
+                )
+              : null,
           color: ColorSerivce.surfaceCard,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+            children: [r
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
@@ -398,12 +222,18 @@ class NewWidgetStepperState extends State<NewWidgetStepper> {
       ),
       InkWell(
         borderRadius: BorderRadius.circular(4.0),
-        splashColor: Colors.amber,
+        splashColor: ColorSerivce.constMainColor,
         onTap: () {
           selectedWidgetSize = widgetSizeStandard;
-          goTo(4);
+          goTo(4); 
         },
         child: Card(
+          shape: selectedWidgetSize == widgetSizeStandard
+              ? new RoundedRectangleBorder(
+                  side: new BorderSide(
+                      color: ColorSerivce.constMainColor, width: 2.0),
+                  borderRadius: BorderRadius.circular(4.0))
+              : null,
           color: ColorSerivce.surfaceCard,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -502,7 +332,14 @@ class NewWidgetStepperState extends State<NewWidgetStepper> {
   }
 
   StepState _getStepState(String step) {
-    if (step == 'Datenpunkt') {
+    print(selectedObjectId);
+    if (step == 'Widgettyp') {
+      if (selectedWidgetType == '') {
+        return StepState.editing;
+      } else {
+        return StepState.complete;
+      }
+    } else if (step == 'Datenpunkt') {
       if (selectedAdapterName == '') {
         return StepState.disabled;
       } else if (selectedObjectId == '') {
@@ -511,15 +348,9 @@ class NewWidgetStepperState extends State<NewWidgetStepper> {
         return StepState.complete;
       }
     } else if (step == 'Adapter') {
-      if (selectedAdapterName == '') {
-        return StepState.editing;
-      } else {
-        return StepState.complete;
-      }
-    } else if (step == 'Widgettyp') {
-      if (selectedObjectId == '') {
+      if (selectedWidgetType == '') {
         return StepState.disabled;
-      } else if (selectedWidgetType == '') {
+      } else if (selectedAdapterName == '') {
         return StepState.editing;
       } else {
         return StepState.complete;
@@ -533,8 +364,10 @@ class NewWidgetStepperState extends State<NewWidgetStepper> {
         return StepState.complete;
       }
     } else if (step == 'Weitere Einstellungen') {
-      if (widgetName == '') {
+      if (selectedWidgetType == '') {
         return StepState.disabled;
+      } else if (widgetName == '') {
+        return StepState.editing;
       } else {
         return StepState.complete;
       }
@@ -554,7 +387,9 @@ class NodeModel {
 
 class ObjectListTile extends StatelessWidget {
   final ObjectsModel object;
-  NewWidgetStepperState state;
+
+  var state;
+
 
   ObjectListTile(
       {this.object = const ObjectsModel('', '', '', ''), this.state});
@@ -596,7 +431,7 @@ class EntryItem extends StatelessWidget {
         child: Material(
           child: InkWell(
             borderRadius: BorderRadius.circular(4.0),
-            splashColor: Colors.amber,
+            splashColor: ColorSerivce.constMainColor,
             child: SizedBox(
               width: 30,
               height: 30,
@@ -610,8 +445,10 @@ class EntryItem extends StatelessWidget {
           ),
         ),
       ),
-      title:
-          Text(root.title, style: new TextStyle(fontWeight: FontWeight.w500)),
+      title: Text(
+        root.title,
+        style: new TextStyle(fontWeight: FontWeight.w500),
+      ),
       children: root.children.map(_buildTiles).toList(),
     );
   }
@@ -621,3 +458,4 @@ class EntryItem extends StatelessWidget {
     return _buildTiles(entry);
   }
 }
+ */

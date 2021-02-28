@@ -4,7 +4,7 @@ class ObjectsModel {
   final String name;
   final String desc;
 
-  const ObjectsModel(this.id, this.type, this.name, this.desc);
+  const ObjectsModel({this.id, this.type, this.name, this.desc});
 
   factory ObjectsModel.fromJson(_json) {
     String _desc = '';
@@ -17,10 +17,10 @@ class ObjectsModel {
     }
 
     return ObjectsModel(
-      _json['_id'],
-      _json['common']['type'],
-      _json['common']['name'],
-      _desc,
+      id: _json['_id'],
+      type: _json['common']['type'],
+      name: _json['common']['name'],
+      desc: _desc,
     );
   }
 }

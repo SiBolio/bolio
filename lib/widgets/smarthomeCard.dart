@@ -1,5 +1,6 @@
 import 'package:bolio/models/historyModel.dart';
 import 'package:bolio/widgets/graph.dart';
+import 'package:bolio/widgets/light.dart';
 import 'package:bolio/widgets/onOffButton.dart';
 import 'package:bolio/widgets/singleValue.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,15 @@ class SmarthomeCard extends StatefulWidget {
   final String objectType;
   final String tileSize;
   final String text;
-  SmarthomeCard(this.objectId, this.objectType, this.tileSize, this.text);
+  final String secondayObjectId;
+
+  SmarthomeCard(
+    this.objectId,
+    this.objectType,
+    this.tileSize,
+    this.text, [
+    this.secondayObjectId,
+  ]);
 
   @override
   State<StatefulWidget> createState() => _SmarthomeCardState();
@@ -19,8 +28,9 @@ class SmarthomeCard extends StatefulWidget {
 class _SmarthomeCardState extends State<SmarthomeCard> {
   @override
   Widget build(BuildContext context) {
+      print(widget.objectType);
     switch (widget.objectType) {
-      case 'OnOffButton':
+      case 'On/Off Button':
         {
           return StreamBuilder(
             initialData: globals.socketService.getObjectValue(widget.objectId),
@@ -29,16 +39,19 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                 .stream,
             builder: (BuildContext context, AsyncSnapshot snapshot) {
               if (snapshot.hasData) {
-                return snapshot.data == 'true'
-                    ? OnOffButton(widget.text, widget.objectId, true)
-                    : OnOffButton(widget.text, widget.objectId, false);
+                return OnOffButton(
+                  widget.text,
+                  widget.objectId,
+                  snapshot.data == 'true' ? true : false,
+                  widget.tileSize,
+                );
               } else {
                 return CircularProgressIndicator();
               }
             },
           );
         }
-      case 'SingleValue':
+      case 'Einzelwert':
         {
           return StreamBuilder(
             initialData: globals.socketService.getObjectValue(widget.objectId),
@@ -48,6 +61,26 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
             builder: (BuildContext context, AsyncSnapshot snapshot) {
               if (snapshot.hasData) {
                 return SingleValue(widget.text, widget.objectId, snapshot.data);
+              } else {
+                return CircularProgressIndicator();
+              }
+            },
+          );
+        }
+      case 'Light':
+        {
+          return StreamBuilder(
+            initialData: globals.socketService.getObjectValue(widget.objectId),
+            stream: globals.socketService
+                .getStreamController(widget.objectId)
+                .stream,
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              if (snapshot.hasData) {
+                return snapshot.data == 'true'
+                    ? Light(widget.text, widget.objectId, true, widget.tileSize,
+                        widget.secondayObjectId)
+                    : Light(widget.text, widget.objectId, false,
+                        widget.tileSize, widget.secondayObjectId);
               } else {
                 return CircularProgressIndicator();
               }
@@ -71,7 +104,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
                     if (snapshot.hasData) {
                       return Graph(widget.text, widget.objectId,
-                          historyList.data, snapshot.data);
+                          historyList.data, snapshot.data, widget.tileSize);
                     } else {
                       return CircularProgressIndicator();
                     }

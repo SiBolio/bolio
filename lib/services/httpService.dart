@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:bolio/models/adapterModel.dart';
 import 'package:bolio/models/historyModel.dart';
 import 'package:bolio/models/objectModel.dart';
+import 'package:bolio/pages/newWidgetPages/dataPointPage.dart';
 import 'package:bolio/widgets/newWidgetStepper.dart';
 import 'package:http/http.dart' as http;
 import 'package:bolio/services/globals.dart' as globals;
@@ -21,16 +22,16 @@ class HttpService {
         'alias.0',
         'alias.0',
         'Alias Objekte',
-        'https://raw.githubusercontent.com/ioBroker/ioBroker.admin/master/admin/admin.png',
-        'Stammordner für Aliase');
+        'Stammordner für Aliase',
+        'https://raw.githubusercontent.com/ioBroker/ioBroker.admin/master/admin/admin.png');
     responseList.add(aliasModel);
 
     AdapterModel userDataModel = new AdapterModel(
         '0_userdata.0',
         '0_userdata.0',
         'Benutzerobjekte',
-        'https://raw.githubusercontent.com/ioBroker/ioBroker.admin/master/admin/admin.png',
-        'Stammordner für Benutzerobjekte und Dateien');
+        'Stammordner für Benutzerobjekte und Dateien',
+        'https://raw.githubusercontent.com/ioBroker/ioBroker.admin/master/admin/admin.png');
     responseList.add(userDataModel);
 
     for (var key in parsedJson.keys.toList()) {
@@ -39,6 +40,14 @@ class HttpService {
     }
 
     return responseList;
+  }
+
+  Future<String> getObjectValue(String id) async {
+    var response = await http.get(
+        "http://" + globals.ipAddress + ':' + globals.httpPort + "/get/" + id);
+    Map<String, dynamic> parsedJson = json.decode(response.body);
+
+    return parsedJson['val'].toString();
   }
 
   Future<List<ObjectsModel>> getAdapterObjects(String adapterId) async {
@@ -97,7 +106,7 @@ class HttpService {
     List<HistoryModel> historyList = new List();
 
     DateTime now = new DateTime.now();
-    DateTime from = now.subtract(Duration(days: 30));
+    DateTime from = now.subtract(Duration(days: 1));
 
     objectId = objectId.replaceAll('#', '%23');
     var response = await http.get("http://" +

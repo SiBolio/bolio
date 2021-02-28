@@ -1,4 +1,5 @@
 import 'package:bolio/pages/start.dart';
+import 'package:bolio/services/colorService.dart';
 import 'package:bolio/services/socketService.dart';
 import 'package:flutter/material.dart';
 import 'package:bolio/services/globals.dart' as globals;
@@ -13,15 +14,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Bolio',
       darkTheme: ThemeData(
-        primarySwatch: Colors.amber,
-        accentColor: Colors.amber,
+        primarySwatch: ColorSerivce.constAccentColor,
+        accentColor: ColorSerivce.constAccentColor,
         brightness: Brightness.dark,
       ),
       themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.amber,
-        accentColor: Colors.amber,
+        primarySwatch: ColorSerivce.constAccentColor,
+        accentColor: ColorSerivce.constAccentColor,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: FutureBuilder<bool>(

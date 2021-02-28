@@ -16,6 +16,9 @@ class _SingleValueState extends State<SingleValue> {
   Widget build(BuildContext context) {
     return Card(
       color: ColorSerivce.surfaceCard,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
       child: Column(
         children: <Widget>[
           Flexible(flex: 1, fit: FlexFit.tight, child: Container()),
@@ -36,11 +39,16 @@ class _SingleValueState extends State<SingleValue> {
             fit: FlexFit.tight,
             child: Container(
               child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: FittedBox(
-                    fit: BoxFit.fitWidth,
-                    child: Text(widget.text),
-                  )),
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  widget.text,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             ),
           )
         ],
