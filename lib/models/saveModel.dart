@@ -2,11 +2,18 @@ class SaveModel {
   String uid;
   String name;
   String objectId;
+  String secondaryObjectId;
   String type;
   String size;
   String adapterId;
 
-  SaveModel({this.name, this.objectId, this.type, this.size, this.adapterId}) {
+  SaveModel(
+      {this.name,
+      this.objectId,
+      this.secondaryObjectId,
+      this.type,
+      this.size,
+      this.adapterId}) {
     this.uid = new DateTime.now().millisecondsSinceEpoch.toString();
   }
 
@@ -15,6 +22,7 @@ class SaveModel {
 
     saveModel.name = _json['name'];
     saveModel.objectId = _json['objectId'];
+    saveModel.secondaryObjectId = _json['secondaryObjectId'];
     saveModel.type = _json['type'];
     saveModel.size = _json['size'];
     saveModel.adapterId = _json['adapterId'];
@@ -26,6 +34,7 @@ class SaveModel {
   Map<String, dynamic> toJson() => {
         'name': name,
         'objectId': objectId,
+        'secondaryObjectId': secondaryObjectId,
         'size': size,
         'type': type,
         'adapterId': adapterId,

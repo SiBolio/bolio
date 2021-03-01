@@ -12,19 +12,18 @@ class _StartPageState extends State<StartPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
       backgroundColor: ColorSerivce.surface,
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: PageView(
           children: <Widget>[
             TileGrid(),
-            Container(
+           /*  Container(
               child: Center(child: Text('2')),
             ),
             Container(
               child: Center(child: Text('3')),
-            ),
+            ), */
           ],
         ),
       ),

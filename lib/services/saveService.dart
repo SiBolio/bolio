@@ -56,4 +56,16 @@ class SaveService {
 
     return allFavoritesRaw;
   }
+
+  updateWidgetList(List<SaveModel> widgets) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    List<String> allFavoritesRaw = [];
+
+    for (var favorite in widgets) {
+      allFavoritesRaw.add(jsonEncode(favorite));
+    }
+
+    prefs.setStringList('favorites', allFavoritesRaw);
+  }
 }

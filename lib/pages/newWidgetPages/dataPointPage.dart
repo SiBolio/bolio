@@ -57,37 +57,58 @@ class _DataPointPageState extends State<DataPointPage> {
           )
         ],
       ),
-      body: widget.objectList == null
-          ? FutureBuilder(
-              future: widget.httpService
-                  .getAdapterObjects(widget.saveCMD.adapterId),
-              builder: (BuildContext context,
-                  AsyncSnapshot<List<ObjectsModel>> snapshotAdapterObjects) {
-                if (snapshotAdapterObjects.hasData) {
-                  return FutureBuilder(
-                    future: _setObjectList(
-                        widget.saveCMD.adapterId, snapshotAdapterObjects.data),
+      body: Column(
+        children: [
+          Visibility(
+            visible: widget.saveCMD.objectId == null &&
+                widget.saveCMD.type == 'Licht',
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'Wählen sie Datenpunkt um das Licht an und auszuschalten',
+              ),
+            ),
+          ),
+          Expanded(
+            child: widget.objectList == null
+                ? FutureBuilder(
+                    future: widget.httpService
+                        .getAdapterObjects(widget.saveCMD.adapterId),
                     builder: (BuildContext context,
-                        AsyncSnapshot<bool> snapshotObjectList) {
-                      if (widget.objectList != null &&
-                          snapshotObjectList.connectionState ==
-                              ConnectionState.done) {
-                        return widget.objectList;
-                      } else if (snapshotObjectList.connectionState ==
-                              ConnectionState.done &&
-                          !snapshotObjectList.hasData) {
-                        return Text('Keine Datenpunkte gefunden');
+                        AsyncSnapshot<List<ObjectsModel>>
+                            snapshotAdapterObjects) {
+                      if (snapshotAdapterObjects.hasData) {
+                        return FutureBuilder(
+                          future: _setObjectList(widget.saveCMD.adapterId,
+                              snapshotAdapterObjects.data),
+                          builder: (BuildContext context,
+                              AsyncSnapshot<bool> snapshotObjectList) {
+                            if (widget.objectList != null &&
+                                snapshotObjectList.connectionState ==
+                                    ConnectionState.done) {
+                              return widget.objectList;
+                            } else if (snapshotObjectList.connectionState ==
+                                    ConnectionState.done &&
+                                !snapshotObjectList.hasData) {
+                              return Text('Keine Datenpunkte gefunden');
+                            } else {
+                              return Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+                          },
+                        );
                       } else {
-                        return Center(child: CircularProgressIndicator());
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
                       }
                     },
-                  );
-                } else {
-                  return CircularProgressIndicator();
-                }
-              },
-            )
-          : widget.objectList,
+                  )
+                : widget.objectList,
+          ),
+        ],
+      ),
     );
   }
 
@@ -179,8 +200,7 @@ class ObjectListTile extends StatelessWidget {
   final ObjectsModel object;
   _DataPointPageState parentState;
 
-  ObjectListTile(
-      {this.object = const ObjectsModel(), this.parentState});
+  ObjectListTile({this.object = const ObjectsModel(), this.parentState});
 
   @override
   Widget build(BuildContext context) {

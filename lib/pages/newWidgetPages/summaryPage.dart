@@ -31,12 +31,9 @@ class _SummaryPageState extends State<SummaryPage> {
             onPressed: () {
               widget.saveCMD.name = widget.widgetName;
               widget.saveService.saveWidget(widget.saveCMD);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => StartPage(),
-                ),
-              );
+              Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => StartPage()),
+                  (Route<dynamic> route) => false);
             },
             elevation: 2.0,
             fillColor: ColorSerivce.constMainColor,

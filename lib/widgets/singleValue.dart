@@ -25,13 +25,16 @@ class _SingleValueState extends State<SingleValue> {
           Flexible(
             flex: 1,
             fit: FlexFit.tight,
-            child: LayoutBuilder(
-              builder: (context, constraint) {
-                return FittedBox(
-                  fit: BoxFit.fitWidth,
-                  child: Text(widget.value),
-                );
-              },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: LayoutBuilder(
+                builder: (context, constraint) {
+                  return FittedBox(
+                    fit: BoxFit.fitWidth,
+                    child: Text(widget.value),
+                  );
+                },
+              ),
             ),
           ),
           Flexible(

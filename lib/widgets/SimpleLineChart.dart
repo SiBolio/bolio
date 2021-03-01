@@ -45,7 +45,7 @@ class SimpleLineChart extends StatelessWidget {
         },
         domainFn: (HistoryModel history, _) => history.timeStamp,
         measureFn: (HistoryModel history, _) => history.value,
-        strokeWidthPxFn: (HistoryModel history, _) => 2,
+        strokeWidthPxFn: (HistoryModel history, _) => 4,
         data: this.historyList,
       )
     ];
