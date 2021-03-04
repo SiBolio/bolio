@@ -6,11 +6,11 @@ import 'package:bolio/services/httpService.dart';
 import 'package:flutter/material.dart';
 
 class DataPointPage extends StatefulWidget {
-  String selectedItem = '';
-  String dataPoint = '';
+  String selectedDataPoint = '';
   HttpService httpService;
   SaveModel saveCMD;
-  ListView objectList;
+
+  List<ObjectsModel> objectList;
 
   DataPointPage(this.saveCMD) {
     this.httpService = new HttpService();
@@ -24,22 +24,16 @@ class _DataPointPageState extends State<DataPointPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ColorSerivce.surface,
+      backgroundColor: ColorService.surface,
       appBar: AppBar(
-        title: widget.selectedItem == ''
-            ? Text('Datenpunkt')
-            : Text(
-                widget.selectedItem,
-                overflow: TextOverflow.ellipsis,
-              ),
-        backgroundColor: ColorSerivce.surface,
-        elevation: 0.0,
+        title: Text('Datenpunkt'),
+        backgroundColor: ColorService.surface,
         actions: <Widget>[
           Visibility(
-            visible: widget.selectedItem != '',
+            visible: widget.selectedDataPoint != '',
             child: RawMaterialButton(
               onPressed: () {
-                widget.saveCMD.objectId = widget.dataPoint;
+                widget.saveCMD.objectId = widget.selectedDataPoint;
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -48,7 +42,7 @@ class _DataPointPageState extends State<DataPointPage> {
                 );
               },
               elevation: 2.0,
-              fillColor: ColorSerivce.constMainColor,
+              fillColor: ColorService.constMainColor,
               child: Icon(
                 Icons.arrow_forward_ios_sharp,
               ),
@@ -57,215 +51,173 @@ class _DataPointPageState extends State<DataPointPage> {
           )
         ],
       ),
-      body: Column(
-        children: [
-          Visibility(
-            visible: widget.saveCMD.objectId == null &&
-                widget.saveCMD.type == 'Licht',
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Wählen sie Datenpunkt um das Licht an und auszuschalten',
-              ),
-            ),
-          ),
-          Expanded(
-            child: widget.objectList == null
-                ? FutureBuilder(
-                    future: widget.httpService
-                        .getAdapterObjects(widget.saveCMD.adapterId),
-                    builder: (BuildContext context,
-                        AsyncSnapshot<List<ObjectsModel>>
-                            snapshotAdapterObjects) {
-                      if (snapshotAdapterObjects.hasData) {
-                        return FutureBuilder(
-                          future: _setObjectList(widget.saveCMD.adapterId,
-                              snapshotAdapterObjects.data),
-                          builder: (BuildContext context,
-                              AsyncSnapshot<bool> snapshotObjectList) {
-                            if (widget.objectList != null &&
-                                snapshotObjectList.connectionState ==
-                                    ConnectionState.done) {
-                              return widget.objectList;
-                            } else if (snapshotObjectList.connectionState ==
-                                    ConnectionState.done &&
-                                !snapshotObjectList.hasData) {
-                              return Text('Keine Datenpunkte gefunden');
-                            } else {
-                              return Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            }
-                          },
-                        );
-                      } else {
-                        return Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      }
-                    },
-                  )
-                : widget.objectList,
-          ),
-        ],
+      body: Center(
+        child: FutureBuilder(
+          future:
+              widget.httpService.getAdapterObjects(widget.saveCMD.adapterId),
+          builder: (BuildContext context,
+              AsyncSnapshot<List<ObjectsModel>> snapshotAdapterObjects) {
+            if (snapshotAdapterObjects.hasData) {
+              _setAdapterObjectList(snapshotAdapterObjects.data);
+              return buildListView(widget.saveCMD.adapterId);
+            } else {
+              return CircularProgressIndicator();
+            }
+          },
+        ),
       ),
     );
   }
 
-  Future<bool> _setObjectList(
-      String adapterId, List<ObjectsModel> adapterObjects) async {
-    List<NodeModel> nodes = await widget.httpService.getAdapterNodes(adapterId);
+  ListView buildListView(String adapterId) {
+    Node root = new Node();
+    root.name = adapterId;
 
-    Entry root = new Entry('root', 'root', []);
-    Entry current = root;
-
-    for (ObjectsModel adapterObject in adapterObjects) {
-      List<String> objectHierarchyIds =
-          _getObjectHierarchyIds(adapterObject.id);
-      List<String> objectHierarchyIdsFull =
-          _getObjectHierarchyIdsFull(adapterObject.id);
-
-      for (var i = 0; i < objectHierarchyIds.length; i++) {
-        bool foundEntry = false;
-        for (Entry child in current.children) {
-          if (child.id == objectHierarchyIds[i]) {
-            foundEntry = true;
-            current = child;
+    for (ObjectsModel object in widget.objectList) {
+      if (object.name == 'typeXXXXX') {
+        print('FF');
+      }
+      Node currentNode = root;
+      List<String> objectPath = object.id.split(".");
+      for (var i = 1; i < objectPath.length; i++) {
+        bool nodeFound = false;
+        for (var child in currentNode.children) {
+          if (child.name == objectPath[i]) {
+            currentNode = child;
+            nodeFound = true;
           }
         }
-        if (!foundEntry) {
-          Entry newEntry = new Entry(
-            objectHierarchyIds[i],
-            _getNodeName(objectHierarchyIdsFull[i], nodes),
-            [],
-            i == objectHierarchyIds.length - 1
-                ? GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        widget.dataPoint = adapterObject.id;
-                        widget.selectedItem = adapterObject.name;
-                      });
-                    },
-                    child: ObjectListTile(
-                        object: adapterObject, parentState: this),
-                  )
-                : null,
-          );
-          current.children.add(newEntry);
-          current = newEntry;
+
+        if (!nodeFound) {
+          Node newNode = new Node();
+          newNode.name = objectPath[i];
+          newNode.objectId = object.id;
+
+          if (i == objectPath.length - 1) {
+            newNode.objectId = object.id;
+            newNode.type = object.dataType;
+          }
+
+          currentNode.children.add(newNode);
+          currentNode = newNode;
         }
       }
-      current = root;
     }
-    widget.objectList = ListView.builder(
-      itemBuilder: (BuildContext context, int index) =>
-          EntryItem(root.children[0]),
+
+    return ListView.builder(
       itemCount: 1,
+      itemBuilder: (context, index) {
+        return ExpansionTile(
+          title: Text(root.name),
+          children: _getChildrenTiles(root),
+          initiallyExpanded: true,
+        );
+      },
     );
-    return true;
   }
 
-  List<String> _getObjectHierarchyIds(String id) {
-    List<String> returnList = [];
-    id.split('.').forEach((element) {
-      returnList.add(element);
-    });
-    return returnList;
-  }
-
-  List<String> _getObjectHierarchyIdsFull(String id) {
-    List<String> returnList = [];
-
-    id.split('.').forEach((element) {
-      returnList.add(element);
-    });
-
-    for (var i = 1; i < returnList.length; i++) {
-      returnList[i] = returnList[i - 1] + '.' + returnList[i];
+  List<Widget> _getChildrenTiles(Node node) {
+    List<Widget> tiles = [];
+    for (var child in node.children) {
+      child.children.length == 0
+          ? tiles.add(
+              GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      widget.selectedDataPoint = child.objectId;
+                    });
+                  },
+                  child: DataPointTile(
+                    child: child,
+                    isSelected: widget.selectedDataPoint == child.objectId,
+                  )),
+            )
+          : tiles.add(
+              ExpansionTile(
+                title: Text(_getExpansionTileName(child.objectId)),
+                children: _getChildrenTiles(child),
+                subtitle: Text(child.name),
+              ),
+            );
     }
-    return returnList;
+    return tiles;
   }
 
-  String _getNodeName(String objectsId, List<NodeModel> nodes) {
-    for (var node in nodes) {
-      if (node.id == objectsId) {
-        return node.name;
+  void _setAdapterObjectList(List<ObjectsModel> items) {
+    widget.objectList = items;
+  }
+
+  String _getExpansionTileName(String objectId) {
+    if (objectId == 'pi-hole.0.type') {
+      print('FFFF');
+    }
+    String returnText = '';
+    for (var object in widget.objectList) {
+      if (object.id == objectId) {
+        returnText = object.name;
+        break;
       }
     }
-    return objectsId;
+    return returnText;
   }
 }
 
-class ObjectListTile extends StatelessWidget {
-  final ObjectsModel object;
-  _DataPointPageState parentState;
+class DataPointTile extends StatelessWidget {
+  const DataPointTile({
+    Key key,
+    @required this.child,
+    this.isSelected,
+  }) : super(key: key);
 
-  ObjectListTile({this.object = const ObjectsModel(), this.parentState});
+  final Node child;
+  final bool isSelected;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(object.name),
-      subtitle: Text(object.id),
-    );
-  }
-}
-
-class NodeModel {
-  String name;
-  String id;
-  String type;
-
-  NodeModel({this.name = '', this.id = '', this.type = ''});
-}
-
-class Entry {
-  Entry(this.id, this.title,
-      [this.children = const <Entry>[], this.objectTile]);
-
-  final String id;
-  final String title;
-  final List<Entry> children;
-  final GestureDetector objectTile;
-}
-
-class EntryItem extends StatelessWidget {
-  EntryItem(this.entry);
-
-  final Entry entry;
-
-  Widget _buildTiles(Entry root) {
-    if (root.children.isEmpty) return root.objectTile;
-    return ExpansionTile(
-      key: PageStorageKey<Entry>(root),
       leading: ClipOval(
         child: Material(
-          child: InkWell(
-            borderRadius: BorderRadius.circular(4.0),
-            splashColor: ColorSerivce.constMainColor,
-            child: SizedBox(
-              width: 30,
-              height: 30,
-              child: Center(
-                child: Text(
-                  root.children.length.toString(),
-                  style: new TextStyle(fontSize: 14.0),
-                ),
-              ),
-            ),
-          ),
+          color: ColorService.constMainColor,
+          child: SizedBox(
+              width: 40, height: 40, child: Icon(_getTileIcon(child.type))),
         ),
       ),
-      title: Text(
-        root.title,
-        style: new TextStyle(fontWeight: FontWeight.w500),
-      ),
-      children: root.children.map(_buildTiles).toList(),
+      tileColor:
+          isSelected ? ColorService.constMainColor : ColorService.tileColor,
+      title: child.name != null ? Text(child.name) : Text('-'),
+      subtitle: child.objectId != null ? Text(child.objectId) : Text('-'),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return _buildTiles(entry);
+  IconData _getTileIcon(String type) {
+    switch (type) {
+      case 'boolean':
+        return Icons.power_settings_new;
+        break;
+      case 'number':
+        return Icons.looks_two;
+        break;
+      case 'string':
+        return Icons.short_text;
+        break;
+      case 'value':
+        return Icons.money_outlined;
+        break;
+      case 'text':
+        return Icons.text_snippet;
+        break;
+      default:
+        print('Typ:' + type.toString());
+        return Icons.circle;
+        break;
+    }
   }
+}
+
+class Node {
+  String name;
+  String objectId;
+  String type;
+  String displayName;
+  List<Node> children = [];
 }

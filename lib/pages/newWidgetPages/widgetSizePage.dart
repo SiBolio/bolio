@@ -34,10 +34,10 @@ class _WidgetSizePageState extends State<WidgetSizePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ColorSerivce.surface,
+      backgroundColor: ColorService.surface,
       appBar: AppBar(
         title: Text('Widgetgröße'),
-        backgroundColor: ColorSerivce.surface,
+        backgroundColor: ColorService.surface,
         elevation: 0.0,
         actions: <Widget>[
           Visibility(
@@ -53,7 +53,7 @@ class _WidgetSizePageState extends State<WidgetSizePage> {
                 );
               },
               elevation: 2.0,
-              fillColor: ColorSerivce.constMainColor,
+              fillColor: ColorService.constMainColor,
               child: Icon(
                 Icons.arrow_forward_ios_sharp,
               ),
@@ -103,7 +103,7 @@ class WidgetTypeCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
       ),
       color:
-          isSelected ? ColorSerivce.constMainColor : ColorSerivce.surfaceCard,
+          isSelected ? ColorService.constMainColor : ColorService.surfaceCard,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -118,8 +118,8 @@ class WidgetTypeCard extends StatelessWidget {
             child: Icon(
               iconData,
               color: isSelected
-                  ? ColorSerivce.constMainColorSub
-                  : ColorSerivce.constMainColor,
+                  ? ColorService.constMainColorSub
+                  : ColorService.constMainColor,
               size: 38.0,
             ),
           ),
@@ -132,7 +132,7 @@ class WidgetTypeCard extends StatelessWidget {
               style: new TextStyle(
                 fontSize: 14.0,
                 color:
-                    isSelected ? ColorSerivce.constMainColorSub : Colors.white,
+                    isSelected ? ColorService.constMainColorSub : Colors.white,
               ),
             ),
           ),

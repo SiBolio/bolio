@@ -12,22 +12,30 @@ class _StartPageState extends State<StartPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ColorSerivce.surface,
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: PageView(
-          children: <Widget>[
-            TileGrid(),
-           /*  Container(
-              child: Center(child: Text('2')),
-            ),
-            Container(
-              child: Center(child: Text('3')),
-            ), */
-          ],
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF000a12), Color(0xFF263238)])),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: PageView(
+            children: <Widget>[
+              TileGrid(),
+              /*  Container(
+                child: Center(child: Text('2')),
+              ),
+              Container(
+                child: Center(child: Text('3')),
+              ), */
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: ColorService.constAccentColor,
         onPressed: () {
           Navigator.push(
             context,
@@ -38,9 +46,8 @@ class _StartPageState extends State<StartPage> {
         },
         child: Icon(
           Icons.settings,
-          color: ColorSerivce.constMainColorSub,
+          color: ColorService.surfaceCard,
         ),
-        backgroundColor: ColorSerivce.constMainColor,
       ),
     );
   }

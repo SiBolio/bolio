@@ -25,9 +25,9 @@ class _SliderWidgetState extends State<SliderWidget> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: ColorSerivce.surfaceCard,
+      color: ColorService.surfaceCard,
       shape: RoundedRectangleBorder(
-        side: BorderSide(color: ColorSerivce.constMainColor),
+        side: BorderSide(color: ColorService.constMainColor),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
@@ -43,7 +43,7 @@ class _SliderWidgetState extends State<SliderWidget> {
               flex: 2,
               fit: FlexFit.tight,
               child: Slider(
-                activeColor: ColorSerivce.constMainColor,
+                activeColor: ColorService.constMainColor,
                 max: 100,
                 min: 0,
                 value: widget.sliderValue,

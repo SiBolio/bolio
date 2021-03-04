@@ -19,10 +19,10 @@ class _WidgetOverviewPageState extends State<WidgetOverviewPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ColorSerivce.surface,
+      backgroundColor: ColorService.surface,
       appBar: AppBar(
         title: Text('Widgets bearbeiten'),
-        backgroundColor: ColorSerivce.surface,
+        backgroundColor: ColorService.surface,
         elevation: 0.0,
       ),
       body: Center(
@@ -54,13 +54,13 @@ class _WidgetOverviewPageState extends State<WidgetOverviewPage> {
               subtitle: Text(widgets[i].objectId),
               leading: ClipOval(
                 child: Material(
-                  color: ColorSerivce.constMainColor,
+                  color: ColorService.constMainColor,
                   child: SizedBox(
                     width: 35,
                     height: 35,
                     child: Icon(
                       _getLeadingIconData(widgets[i].type),
-                      color: ColorSerivce.constMainColorSub,
+                      color: ColorService.constMainColorSub,
                     ),
                   ),
                 ),
@@ -135,7 +135,7 @@ class _WidgetOverviewPageState extends State<WidgetOverviewPage> {
       builder: (BuildContext context) {
         return Container(
           height: 200,
-          color: ColorSerivce.surfaceCard,
+          color: ColorService.surfaceCard,
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(

@@ -24,10 +24,10 @@ class _AdapterSelectPageState extends State<AdapterSelectPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ColorSerivce.surface,
+      backgroundColor: ColorService.surface,
       appBar: AppBar(
         title: Text('Adapterauswahl'),
-        backgroundColor: ColorSerivce.surface,
+        backgroundColor: ColorService.surface,
         elevation: 0.0,
         actions: <Widget>[
           Visibility(
@@ -44,7 +44,7 @@ class _AdapterSelectPageState extends State<AdapterSelectPage> {
                 );
               },
               elevation: 2.0,
-              fillColor: ColorSerivce.constMainColor,
+              fillColor: ColorService.constMainColor,
               child: Icon(
                 Icons.arrow_forward_ios_sharp,
               ),
@@ -121,7 +121,7 @@ class AdapterCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
       ),
       color:
-          isSelected ? ColorSerivce.constMainColor : ColorSerivce.surfaceCard,
+          isSelected ? ColorService.constMainColor : ColorService.surfaceCard,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -158,7 +158,7 @@ class AdapterCard extends StatelessWidget {
                 style: new TextStyle(
                   fontSize: 14.0,
                   color: isSelected
-                      ? ColorSerivce.constMainColorSub
+                      ? ColorService.constMainColorSub
                       : Colors.white,
                 ),
               ),

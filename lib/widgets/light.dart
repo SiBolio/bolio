@@ -33,10 +33,10 @@ class _LightState extends State<Light> {
       },
       child: Card(
         color: widget.isOn
-            ? ColorSerivce.constMainColor
-            : ColorSerivce.surfaceCard,
+            ? ColorService.constMainColor
+            : ColorService.surfaceCard,
         shape: RoundedRectangleBorder(
-          side: BorderSide(color: ColorSerivce.constMainColor),
+          side: BorderSide(color: ColorService.constMainColor),
           borderRadius: BorderRadius.circular(15),
         ),
         child: Column(
@@ -55,8 +55,8 @@ class _LightState extends State<Light> {
                 Icons.lightbulb_outline_sharp,
                 size: 50,
                 color: widget.isOn
-                    ? ColorSerivce.constMainColorSub
-                    : ColorSerivce.constMainColor,
+                    ? ColorService.constMainColorSub
+                    : ColorService.constMainColor,
               ),
             ),
             Flexible(
@@ -69,7 +69,7 @@ class _LightState extends State<Light> {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 16,
-                    color: widget.isOn ? ColorSerivce.constMainColorSub : Colors.white,
+                    color: widget.isOn ? ColorService.constMainColorSub : Colors.white,
                   ),
                 ),
               ),
@@ -87,7 +87,7 @@ class _LightState extends State<Light> {
       builder: (BuildContext context) {
         return Container(
           height: 200,
-          color: ColorSerivce.surfaceCard,
+          color: ColorService.surfaceCard,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -107,7 +107,7 @@ class _LightState extends State<Light> {
                     sliderValue = double.parse(snapshot.data);
                     return StatefulBuilder(builder: (context, setState) {
                       return Slider(
-                        activeColor: ColorSerivce.constMainColor,
+                        activeColor: ColorService.constMainColor,
                         max: 100,
                         min: 0,
                         value: sliderValue,

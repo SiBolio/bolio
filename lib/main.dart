@@ -14,17 +14,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Bolio',
       darkTheme: ThemeData(
-        primarySwatch: ColorSerivce.constAccentColor,
-        accentColor: ColorSerivce.constAccentColor,
+        accentColor: Colors.blueGrey,
+        primarySwatch: ColorService.primarySwatch,
         brightness: Brightness.dark,
       ),
       themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: ColorSerivce.constAccentColor,
-        accentColor: ColorSerivce.constAccentColor,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
       home: FutureBuilder<bool>(
         future: _setSocket(),
         builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {

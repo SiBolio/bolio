@@ -41,7 +41,7 @@ class SimpleLineChart extends StatelessWidget {
       new charts.Series<HistoryModel, DateTime>(
         id: 'History',
         colorFn: (HistoryModel history, __) {
-          return charts.ColorUtil.fromDartColor(ColorSerivce.constMainColor);
+          return charts.ColorUtil.fromDartColor(ColorService.constMainColor);
         },
         domainFn: (HistoryModel history, _) => history.timeStamp,
         measureFn: (HistoryModel history, _) => history.value,

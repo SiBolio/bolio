@@ -22,10 +22,10 @@ class _OnOffButtonState extends State<OnOffButton> {
       },
       child: Card(
         color: widget.isOn
-            ? ColorSerivce.constMainColor
-            : ColorSerivce.surfaceCard,
+            ? ColorService.constMainColor
+            : ColorService.surfaceCard,
         shape: RoundedRectangleBorder(
-          side: BorderSide(color: ColorSerivce.constMainColor),
+          side: BorderSide(color: ColorService.constMainColor),
           borderRadius: BorderRadius.circular(15),
         ),
         child: Column(
@@ -43,7 +43,7 @@ class _OnOffButtonState extends State<OnOffButton> {
               child: Icon(
                 Icons.power_settings_new_sharp,
                 size: 50,
-                color: widget.isOn ? ColorSerivce.constMainColorSub: ColorSerivce.constMainColor,
+                color: widget.isOn ? ColorService.constMainColorSub: ColorService.constMainColor,
               ),
             ),
             Flexible(
@@ -56,7 +56,7 @@ class _OnOffButtonState extends State<OnOffButton> {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 16,
-                    color: widget.isOn ? ColorSerivce.constMainColorSub : Colors.white,
+                    color: widget.isOn ? ColorService.constMainColorSub : Colors.white,
                   ),
                 ),
               ),

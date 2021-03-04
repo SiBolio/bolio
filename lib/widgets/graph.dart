@@ -22,7 +22,7 @@ class _GraphState extends State<Graph> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: ColorSerivce.surfaceCard,
+      color: ColorService.surfaceCard,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
       ),

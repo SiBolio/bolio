@@ -21,10 +21,10 @@ class _SummaryPageState extends State<SummaryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ColorSerivce.surface,
+      backgroundColor: ColorService.surface,
       appBar: AppBar(
         title: Text('Sonstige Einstellungen'),
-        backgroundColor: ColorSerivce.surface,
+        backgroundColor: ColorService.surface,
         elevation: 0.0,
         actions: <Widget>[
           RawMaterialButton(
@@ -36,7 +36,7 @@ class _SummaryPageState extends State<SummaryPage> {
                   (Route<dynamic> route) => false);
             },
             elevation: 2.0,
-            fillColor: ColorSerivce.constMainColor,
+            fillColor: ColorService.constMainColor,
             child: Icon(
               Icons.save,
             ),

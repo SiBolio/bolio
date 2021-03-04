@@ -51,39 +51,21 @@ class HttpService {
   }
 
   Future<List<ObjectsModel>> getAdapterObjects(String adapterId) async {
+    List<ObjectsModel> responseList = [];
+
     var response = await http.get("http://" +
         globals.ipAddress +
         ':' +
         globals.httpPort +
         "/objects?pattern=" +
         adapterId +
-        "*&type=state&prettyPrint");
+        "*&type=device&prettyPrint");
 
     Map<String, dynamic> parsedJson = json.decode(response.body);
-    List<ObjectsModel> responseList = [];
 
     for (var key in parsedJson.keys.toList()) {
       var ioBrokerObject = ObjectsModel.fromJson(parsedJson[key]);
       responseList.add(ioBrokerObject);
-    }
-    return responseList;
-  }
-
-  Future<List<NodeModel>> getAdapterNodes(String adapterId) async {
-    var response = await http.get("http://" +
-        globals.ipAddress +
-        ':' +
-        globals.httpPort +
-        "/objects?pattern=" +
-        adapterId +
-        "*&type=channel&prettyPrint");
-
-    Map<String, dynamic> parsedJson = json.decode(response.body);
-    List<NodeModel> responseList = [];
-
-    for (var key in parsedJson.keys.toList()) {
-      responseList.add(NodeModel(
-          id: key, name: parsedJson[key]['common']['name'], type: 'channel'));
     }
 
     response = await http.get("http://" +
@@ -92,13 +74,30 @@ class HttpService {
         globals.httpPort +
         "/objects?pattern=" +
         adapterId +
-        "*&type=device&prettyPrint");
+        "*&type=state&prettyPrint");
 
     parsedJson = json.decode(response.body);
+
     for (var key in parsedJson.keys.toList()) {
-      responseList.add(NodeModel(
-          id: key, name: parsedJson[key]['common']['name'], type: 'device'));
+      var ioBrokerObject = ObjectsModel.fromJson(parsedJson[key]);
+      responseList.add(ioBrokerObject);
     }
+
+    response = await http.get("http://" +
+        globals.ipAddress +
+        ':' +
+        globals.httpPort +
+        "/objects?pattern=" +
+        adapterId +
+        "*&type=channel&prettyPrint");
+
+    parsedJson = json.decode(response.body);
+
+    for (var key in parsedJson.keys.toList()) {
+      var ioBrokerObject = ObjectsModel.fromJson(parsedJson[key]);
+      responseList.add(ioBrokerObject);
+    }
+
     return responseList;
   }
 

@@ -1,10 +1,12 @@
 class ObjectsModel {
   final String id;
-  final String type;
+  final String dataType;
   final String name;
   final String desc;
+  final String objectType;
 
-  const ObjectsModel({this.id, this.type, this.name, this.desc});
+  const ObjectsModel(
+      {this.id, this.dataType, this.name, this.desc, this.objectType});
 
   factory ObjectsModel.fromJson(_json) {
     String _desc = '';
@@ -18,9 +20,10 @@ class ObjectsModel {
 
     return ObjectsModel(
       id: _json['_id'],
-      type: _json['common']['type'],
+      dataType: _json['common']['type'],
       name: _json['common']['name'],
       desc: _desc,
+      objectType: _json['type'],
     );
   }
 }

@@ -12,10 +12,10 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ColorSerivce.surface,
+      backgroundColor: ColorService.surface,
       appBar: AppBar(
         title: Text('Einstellungen'),
-        backgroundColor: ColorSerivce.surface,
+        backgroundColor: ColorService.surface,
         elevation: 0.0,
       ),
       body: ListView(
@@ -23,13 +23,13 @@ class _SettingsPageState extends State<SettingsPage> {
           ListTile(
             leading: ClipOval(
               child: Material(
-                color: ColorSerivce.constMainColor,
+                color: ColorService.constMainColor,
                 child: SizedBox(
-                  width: 35,
-                  height: 35,
+                  width: 40,
+                  height: 40,
                   child: Icon(
                     Icons.add,
-                    color: ColorSerivce.constMainColorSub,
+                    color: ColorService.constMainColorSub,
                   ),
                 ),
               ),
@@ -45,13 +45,13 @@ class _SettingsPageState extends State<SettingsPage> {
           ListTile(
             leading: ClipOval(
               child: Material(
-                color: ColorSerivce.constMainColor,
+                color: ColorService.constMainColor,
                 child: SizedBox(
                   width: 35,
                   height: 35,
                   child: Icon(
                     Icons.edit,
-                    color: ColorSerivce.constMainColorSub,
+                    color: ColorService.constMainColorSub,
                   ),
                 ),
               ),

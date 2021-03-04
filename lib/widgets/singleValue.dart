@@ -15,7 +15,7 @@ class _SingleValueState extends State<SingleValue> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: ColorSerivce.surfaceCard,
+      color: ColorService.surfaceCard,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
       ),
@@ -27,13 +27,9 @@ class _SingleValueState extends State<SingleValue> {
             fit: FlexFit.tight,
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: LayoutBuilder(
-                builder: (context, constraint) {
-                  return FittedBox(
-                    fit: BoxFit.fitWidth,
-                    child: Text(widget.value),
-                  );
-                },
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: Text(widget.value),
               ),
             ),
           ),
