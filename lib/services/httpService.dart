@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'package:bolio/models/adapterModel.dart';
 import 'package:bolio/models/historyModel.dart';
 import 'package:bolio/models/objectModel.dart';
-import 'package:bolio/pages/newWidgetPages/dataPointPage.dart';
-import 'package:bolio/widgets/newWidgetStepper.dart';
 import 'package:http/http.dart' as http;
 import 'package:bolio/services/globals.dart' as globals;
 
@@ -101,11 +99,14 @@ class HttpService {
     return responseList;
   }
 
-  Future<List<HistoryModel>> getHistory(String objectId) async {
-    List<HistoryModel> historyList = new List();
+  Future<List<HistoryModel>> getHistory(
+    String objectId,
+    String timespan,
+  ) async {
+    List<HistoryModel> historyList = [];
 
     DateTime now = new DateTime.now();
-    DateTime from = now.subtract(Duration(days: 1));
+    DateTime from = now.subtract(Duration(days: int.parse(timespan)));
 
     objectId = objectId.replaceAll('#', '%23');
     var response = await http.get("http://" +

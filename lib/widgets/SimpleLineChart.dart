@@ -4,10 +4,12 @@ import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
 
 class SimpleLineChart extends StatelessWidget {
-  final List<HistoryModel> historyList;
+  final List<HistoryModel> primaryHistoryList;
+  final List<HistoryModel> secondaryHistoryList;
   final String tileSize;
 
-  SimpleLineChart(this.historyList, this.tileSize);
+  SimpleLineChart(this.primaryHistoryList, this.tileSize,
+      [this.secondaryHistoryList]);
 
   @override
   Widget build(BuildContext context) {
@@ -37,17 +39,32 @@ class SimpleLineChart extends StatelessWidget {
   }
 
   List<charts.Series<HistoryModel, DateTime>> _getSeriesList() {
-    return [
-      new charts.Series<HistoryModel, DateTime>(
-        id: 'History',
+    List<charts.Series<HistoryModel, DateTime>> returnList = [];
+
+    if (secondaryHistoryList != null) {
+      returnList.add(new charts.Series<HistoryModel, DateTime>(
+        id: 'HistorySecondary',
         colorFn: (HistoryModel history, __) {
           return charts.ColorUtil.fromDartColor(ColorService.constMainColor);
         },
         domainFn: (HistoryModel history, _) => history.timeStamp,
         measureFn: (HistoryModel history, _) => history.value,
-        strokeWidthPxFn: (HistoryModel history, _) => 4,
-        data: this.historyList,
-      )
-    ];
+        strokeWidthPxFn: (HistoryModel history, _) => 2,
+        data: this.secondaryHistoryList,
+      ));
+    }
+
+    returnList.add(new charts.Series<HistoryModel, DateTime>(
+      id: 'HistoryPrimary',
+      colorFn: (HistoryModel history, __) {
+        return charts.ColorUtil.fromDartColor(ColorService.constMainColorSub);
+      },
+      domainFn: (HistoryModel history, _) => history.timeStamp,
+      measureFn: (HistoryModel history, _) => history.value,
+      strokeWidthPxFn: (HistoryModel history, _) => 2,
+      data: this.primaryHistoryList,
+    ));
+
+    return returnList;
   }
 }

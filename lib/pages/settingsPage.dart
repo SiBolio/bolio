@@ -47,8 +47,8 @@ class _SettingsPageState extends State<SettingsPage> {
               child: Material(
                 color: ColorService.constMainColor,
                 child: SizedBox(
-                  width: 35,
-                  height: 35,
+                  width: 40,
+                  height: 40,
                   child: Icon(
                     Icons.edit,
                     color: ColorService.constMainColorSub,

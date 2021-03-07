@@ -1,12 +1,20 @@
+import 'package:bolio/models/dataPointNode.dart';
 import 'package:bolio/models/objectModel.dart';
 import 'package:bolio/models/saveModel.dart';
 import 'package:bolio/pages/newWidgetPages/widgetSizePage.dart';
 import 'package:bolio/services/colorService.dart';
 import 'package:bolio/services/httpService.dart';
+import 'package:bolio/widgets/dataPointHintCard.dart';
+import 'package:bolio/widgets/dataPointTile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class DataPointPage extends StatefulWidget {
-  String selectedDataPoint = '';
+  String primaryObjectId = '';
+  String secondaryObjectId = '';
+
+  String selectionStep = '';
+
   HttpService httpService;
   SaveModel saveCMD;
 
@@ -14,6 +22,7 @@ class DataPointPage extends StatefulWidget {
 
   DataPointPage(this.saveCMD) {
     this.httpService = new HttpService();
+    this.selectionStep = 'primary';
   }
 
   @override
@@ -30,10 +39,11 @@ class _DataPointPageState extends State<DataPointPage> {
         backgroundColor: ColorService.surface,
         actions: <Widget>[
           Visibility(
-            visible: widget.selectedDataPoint != '',
+            visible: widget.primaryObjectId != '',
             child: RawMaterialButton(
               onPressed: () {
-                widget.saveCMD.objectId = widget.selectedDataPoint;
+                widget.saveCMD.objectId = widget.primaryObjectId;
+                widget.saveCMD.secondaryObjectId = widget.secondaryObjectId;
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -51,52 +61,81 @@ class _DataPointPageState extends State<DataPointPage> {
           )
         ],
       ),
-      body: Center(
-        child: FutureBuilder(
-          future:
-              widget.httpService.getAdapterObjects(widget.saveCMD.adapterId),
-          builder: (BuildContext context,
-              AsyncSnapshot<List<ObjectsModel>> snapshotAdapterObjects) {
-            if (snapshotAdapterObjects.hasData) {
-              _setAdapterObjectList(snapshotAdapterObjects.data);
-              return buildListView(widget.saveCMD.adapterId);
-            } else {
-              return CircularProgressIndicator();
-            }
-          },
-        ),
+      body: Column(
+        children: [
+          Flexible(
+            flex: 1,
+            fit: FlexFit.tight,
+            child: Container(
+              color: ColorService.hintSurfaceColor,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: _getDataPointHint(),
+                ),
+              ),
+            ),
+          ),
+          Flexible(
+            flex: 9,
+            fit: FlexFit.tight,
+            child: FutureBuilder(
+              future: widget.httpService
+                  .getAdapterObjects(widget.saveCMD.adapterId),
+              builder: (BuildContext context,
+                  AsyncSnapshot<List<ObjectsModel>> snapshotAdapterObjects) {
+                if (snapshotAdapterObjects.hasData) {
+                  _setAdapterObjectList(snapshotAdapterObjects.data);
+                  return buildListView(widget.saveCMD.adapterId);
+                } else {
+                  return Center(child: CircularProgressIndicator());
+                }
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 
   ListView buildListView(String adapterId) {
-    Node root = new Node();
+    DataPointNode root = new DataPointNode();
     root.name = adapterId;
 
     for (ObjectsModel object in widget.objectList) {
-      if (object.name == 'typeXXXXX') {
-        print('FF');
-      }
-      Node currentNode = root;
+      DataPointNode currentNode = root;
       List<String> objectPath = object.id.split(".");
-      for (var i = 1; i < objectPath.length; i++) {
+      for (var i = 2; i < objectPath.length; i++) {
         bool nodeFound = false;
+
+        String expandNodeName = '';
+        String dataPointName = '';
+
+        if (object.objectType == 'channel' || object.objectType == 'device') {
+          expandNodeName = object.name;
+        } else {
+          dataPointName = object.name;
+        }
+
         for (var child in currentNode.children) {
           if (child.name == objectPath[i]) {
             currentNode = child;
+            if (currentNode.expandNodeName == '') {
+              currentNode.expandNodeName = expandNodeName;
+            }
             nodeFound = true;
           }
         }
 
         if (!nodeFound) {
-          Node newNode = new Node();
+          DataPointNode newNode = new DataPointNode();
+
+          newNode.expandNodeName = expandNodeName;
+          newNode.dataPointName = dataPointName;
           newNode.name = objectPath[i];
           newNode.objectId = object.id;
-
-          if (i == objectPath.length - 1) {
-            newNode.objectId = object.id;
-            newNode.type = object.dataType;
-          }
+          newNode.type = object.dataType;
 
           currentNode.children.add(newNode);
           currentNode = newNode;
@@ -116,27 +155,38 @@ class _DataPointPageState extends State<DataPointPage> {
     );
   }
 
-  List<Widget> _getChildrenTiles(Node node) {
+  List<Widget> _getChildrenTiles(DataPointNode node) {
     List<Widget> tiles = [];
     for (var child in node.children) {
       child.children.length == 0
           ? tiles.add(
               GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      widget.selectedDataPoint = child.objectId;
-                    });
-                  },
-                  child: DataPointTile(
-                    child: child,
-                    isSelected: widget.selectedDataPoint == child.objectId,
-                  )),
+                onTap: () {
+                  setState(() {
+                    switch (widget.selectionStep) {
+                      case 'primary':
+                        widget.primaryObjectId = child.objectId;
+                        break;
+                      case 'secondary':
+                        widget.secondaryObjectId = child.objectId;
+                        break;
+                      default:
+                    }
+                  });
+                },
+                child: DataPointTile(
+                  child: child,
+                  isSelectedPrimary: widget.primaryObjectId == child.objectId,
+                  isSelectedSecondary:
+                      widget.secondaryObjectId == child.objectId,
+                ),
+              ),
             )
           : tiles.add(
               ExpansionTile(
-                title: Text(_getExpansionTileName(child.objectId)),
-                children: _getChildrenTiles(child),
                 subtitle: Text(child.name),
+                title: Text(child.expandNodeName),
+                children: _getChildrenTiles(child),
               ),
             );
     }
@@ -147,77 +197,83 @@ class _DataPointPageState extends State<DataPointPage> {
     widget.objectList = items;
   }
 
-  String _getExpansionTileName(String objectId) {
-    if (objectId == 'pi-hole.0.type') {
-      print('FFFF');
+  List<Widget> _getDataPointHint() {
+    if (widget.saveCMD.type == 'Licht') {
+      return _getDataPointHintLight();
+    } else if (widget.saveCMD.type == 'Graph') {
+      return _getDataPointHintGraph();
+    } else {
+      return [Text('Wählen sie einen Datenpunkt für das Widget aus')];
     }
-    String returnText = '';
-    for (var object in widget.objectList) {
-      if (object.id == objectId) {
-        returnText = object.name;
-        break;
-      }
-    }
-    return returnText;
   }
-}
 
-class DataPointTile extends StatelessWidget {
-  const DataPointTile({
-    Key key,
-    @required this.child,
-    this.isSelected,
-  }) : super(key: key);
-
-  final Node child;
-  final bool isSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: ClipOval(
-        child: Material(
-          color: ColorService.constMainColor,
-          child: SizedBox(
-              width: 40, height: 40, child: Icon(_getTileIcon(child.type))),
+  List<Widget> _getDataPointHintLight() {
+    return [
+      Expanded(
+        child: GestureDetector(
+          onTap: () {
+            setState(() {
+              widget.selectionStep = 'primary';
+            });
+          },
+          child: DataPointHintCard(
+            widget.primaryObjectId != '',
+            widget.selectionStep == 'primary',
+            'Datenpunkt um an und auszuschalten',
+            ColorService.selectionPrimary,
+          ),
         ),
       ),
-      tileColor:
-          isSelected ? ColorService.constMainColor : ColorService.tileColor,
-      title: child.name != null ? Text(child.name) : Text('-'),
-      subtitle: child.objectId != null ? Text(child.objectId) : Text('-'),
-    );
+      Expanded(
+        child: GestureDetector(
+          onTap: () {
+            setState(() {
+              widget.selectionStep = 'secondary';
+            });
+          },
+          child: DataPointHintCard(
+            widget.secondaryObjectId != '',
+            widget.selectionStep == 'secondary',
+            'Datenpunkt für die Helligkeit',
+            ColorService.selectionSecondary,
+          ),
+        ),
+      )
+    ];
   }
 
-  IconData _getTileIcon(String type) {
-    switch (type) {
-      case 'boolean':
-        return Icons.power_settings_new;
-        break;
-      case 'number':
-        return Icons.looks_two;
-        break;
-      case 'string':
-        return Icons.short_text;
-        break;
-      case 'value':
-        return Icons.money_outlined;
-        break;
-      case 'text':
-        return Icons.text_snippet;
-        break;
-      default:
-        print('Typ:' + type.toString());
-        return Icons.circle;
-        break;
-    }
+  List<Widget> _getDataPointHintGraph() {
+    return [
+      Expanded(
+        child: GestureDetector(
+          onTap: () {
+            setState(() {
+              widget.selectionStep = 'primary';
+            });
+          },
+          child: DataPointHintCard(
+            widget.primaryObjectId != '',
+            widget.selectionStep == 'primary',
+            'Datenpunkt für den primären Graphen',
+            ColorService.selectionPrimary,
+          ),
+        ),
+      ),
+      Expanded(
+        child: GestureDetector(
+          onTap: () {
+            setState(() {
+              widget.selectionStep = 'secondary';
+            });
+          },
+          child: DataPointHintCard(
+            widget.secondaryObjectId != '',
+            widget.selectionStep == 'secondary',
+            'Datenpunkt für den sekundären Graphen',
+            ColorService.selectionSecondary,
+          ),
+        ),
+      )
+    ];
   }
-}
-
-class Node {
-  String name;
-  String objectId;
-  String type;
-  String displayName;
-  List<Node> children = [];
 }

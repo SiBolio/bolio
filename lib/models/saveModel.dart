@@ -6,6 +6,7 @@ class SaveModel {
   String type;
   String size;
   String adapterId;
+  String timeSpan;
 
   SaveModel(
       {this.name,
@@ -13,7 +14,8 @@ class SaveModel {
       this.secondaryObjectId,
       this.type,
       this.size,
-      this.adapterId}) {
+      this.adapterId,
+      this.timeSpan}) {
     this.uid = new DateTime.now().millisecondsSinceEpoch.toString();
   }
 
@@ -27,6 +29,7 @@ class SaveModel {
     saveModel.size = _json['size'];
     saveModel.adapterId = _json['adapterId'];
     saveModel.uid = _json['uid'];
+    saveModel.timeSpan = _json['timeSpan'];
 
     return saveModel;
   }
@@ -38,6 +41,7 @@ class SaveModel {
         'size': size,
         'type': type,
         'adapterId': adapterId,
-        'uid': uid
+        'uid': uid,
+        'timeSpan': timeSpan,
       };
 }

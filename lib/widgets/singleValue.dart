@@ -21,15 +21,22 @@ class _SingleValueState extends State<SingleValue> {
       ),
       child: Column(
         children: <Widget>[
-          Flexible(flex: 1, fit: FlexFit.tight, child: Container()),
+          Flexible(
+            flex: 1,
+            fit: FlexFit.tight,
+            child: Container(),
+          ),
           Flexible(
             flex: 1,
             fit: FlexFit.tight,
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.only(left: 8.0, right: 8.0),
               child: FittedBox(
-                fit: BoxFit.contain,
-                child: Text(widget.value),
+                fit: BoxFit.fitWidth,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minWidth: 1, minHeight: 1),
+                  child: Text(widget.value),
+                ),
               ),
             ),
           ),

@@ -69,7 +69,9 @@ class _LightState extends State<Light> {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 16,
-                    color: widget.isOn ? ColorService.constMainColorSub : Colors.white,
+                    color: widget.isOn
+                        ? ColorService.constMainColorSub
+                        : Colors.white,
                   ),
                 ),
               ),
@@ -81,6 +83,7 @@ class _LightState extends State<Light> {
   }
 
   _showBottomSheet(BuildContext context) {
+
     double sliderValue = 0;
     return showModalBottomSheet<void>(
       context: context,

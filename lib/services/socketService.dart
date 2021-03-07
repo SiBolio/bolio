@@ -9,16 +9,18 @@ class SocketService {
   SocketService();
 
   Future<IO.Socket> getSocket(String ipAddress, String socketPort) async {
+
     String url = 'http://' + ipAddress + ':' + socketPort + '/';
     var newSocket = IO.io(url, <String, dynamic>{
       'transports': ['websocket'],
       'rememberUpgrade': true,
       'reconnection limit': 10000,
-      'autoConnect': false,
+      'autoConnect': true,
       'reconnection': true,
     });
     newSocket.connect();
     return newSocket;
+
   }
 
   setSocket(IO.Socket socket) {

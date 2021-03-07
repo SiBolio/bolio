@@ -56,8 +56,8 @@ class _WidgetOverviewPageState extends State<WidgetOverviewPage> {
                 child: Material(
                   color: ColorService.constMainColor,
                   child: SizedBox(
-                    width: 35,
-                    height: 35,
+                    width: 40,
+                    height: 40,
                     child: Icon(
                       _getLeadingIconData(widgets[i].type),
                       color: ColorService.constMainColorSub,

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 class SummaryPage extends StatefulWidget {
   String widgetName = '';
+  String timeSpan = '7';
   SaveService saveService;
   SaveModel saveCMD;
 
@@ -30,6 +31,7 @@ class _SummaryPageState extends State<SummaryPage> {
           RawMaterialButton(
             onPressed: () {
               widget.saveCMD.name = widget.widgetName;
+              widget.saveCMD.timeSpan = widget.timeSpan;
               widget.saveService.saveWidget(widget.saveCMD);
               Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (context) => StartPage()),
@@ -46,12 +48,49 @@ class _SummaryPageState extends State<SummaryPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(18.0),
-        child: TextFormField(
-          initialValue: widget.widgetName,
-          decoration: InputDecoration(labelText: 'Widgetname'),
-          onChanged: (value) {
-            widget.widgetName = value;
-          },
+        child: Column(
+          children: [
+            TextFormField(
+              initialValue: widget.widgetName,
+              decoration: InputDecoration(labelText: 'Widgetname'),
+              onChanged: (value) {
+                widget.widgetName = value;
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 20.0),
+              child: Visibility(
+                visible: widget.saveCMD.type == 'Graph',
+                child: Card(
+                  color: ColorService.surfaceCard,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      children: [
+                        Text('Zeitraum für den Graph (Tage)'),
+                        Slider(
+                          activeColor: ColorService.constMainColor,
+                          max: 100,
+                          min: 1,
+                          divisions: 100,
+                          value: double.parse(widget.timeSpan),
+                          onChanged: (selection) {
+                            setState(() {
+                              widget.timeSpan = selection.round().toString();
+                            });
+                          },
+                        ),
+                        Text(
+                          widget.timeSpan + ' Tage',
+                          style: TextStyle(fontSize: 25),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

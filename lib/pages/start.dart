@@ -1,7 +1,9 @@
 import 'package:bolio/pages/settingsPage.dart';
 import 'package:bolio/services/colorService.dart';
+import 'package:bolio/services/socketService.dart';
 import 'package:bolio/widgets/tileGrid.dart';
 import 'package:flutter/material.dart';
+import 'package:bolio/services/globals.dart' as globals;
 
 class StartPage extends StatefulWidget {
   @override
@@ -18,12 +20,22 @@ class _StartPageState extends State<StartPage> {
             gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Color(0xFF000a12), Color(0xFF263238)])),
+                colors: [
+              Color(0xFF000a12),
+              Color(0xFF263238),
+            ])),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: PageView(
             children: <Widget>[
-              TileGrid(),
+              RefreshIndicator(
+                onRefresh: () async {
+                  setState(() {
+                    _setSocket();
+                  });
+                },
+                child: TileGrid(),
+              ),
               /*  Container(
                 child: Center(child: Text('2')),
               ),
@@ -50,5 +62,12 @@ class _StartPageState extends State<StartPage> {
         ),
       ),
     );
+  }
+
+  Future<bool> _setSocket() async {
+    globals.socketService = new SocketService();
+    globals.socketService.setSocket(await globals.socketService
+        .getSocket(globals.ipAddress, globals.socketPort));
+    return true;
   }
 }

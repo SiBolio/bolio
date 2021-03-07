@@ -13,6 +13,7 @@ class SmarthomeCard extends StatefulWidget {
   final String tileSize;
   final String text;
   final String secondayObjectId;
+  final String timespan;
 
   SmarthomeCard(
     this.objectId,
@@ -20,6 +21,7 @@ class SmarthomeCard extends StatefulWidget {
     this.tileSize,
     this.text, [
     this.secondayObjectId,
+    this.timespan,
   ]);
 
   @override
@@ -46,7 +48,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                   widget.tileSize,
                 );
               } else {
-                return CircularProgressIndicator();
+                return Center(child: CircularProgressIndicator());
               }
             },
           );
@@ -62,7 +64,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
               if (snapshot.hasData) {
                 return SingleValue(widget.text, widget.objectId, snapshot.data);
               } else {
-                return CircularProgressIndicator();
+                return Center(child: CircularProgressIndicator());
               }
             },
           );
@@ -82,7 +84,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                     : Light(widget.text, widget.objectId, false,
                         widget.tileSize, widget.secondayObjectId);
               } else {
-                return CircularProgressIndicator();
+                return Center(child: CircularProgressIndicator());
               }
             },
           );
@@ -103,7 +105,7 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                     widget.tileSize,
                     widget.secondayObjectId);
               } else {
-                return CircularProgressIndicator();
+                return Center(child: CircularProgressIndicator());
               }
             },
           );
@@ -111,21 +113,63 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
       case 'Graph':
         {
           return FutureBuilder<List<HistoryModel>>(
-            future: globals.httpService.getHistory(widget.objectId),
+            future: globals.httpService.getHistory(widget.objectId,
+                widget.timespan != null ? widget.timespan : '1'),
             builder: (BuildContext context,
-                AsyncSnapshot<List<HistoryModel>> historyList) {
-              if (historyList.hasData &&
-                  historyList.connectionState == ConnectionState.done) {
+                AsyncSnapshot<List<HistoryModel>> primaryHistoryList) {
+              if (primaryHistoryList.hasData &&
+                  primaryHistoryList.connectionState == ConnectionState.done) {
                 return StreamBuilder(
                   initialData:
                       globals.socketService.getObjectValue(widget.objectId),
                   stream: globals.socketService
                       .getStreamController(widget.objectId)
                       .stream,
-                  builder: (BuildContext context, AsyncSnapshot snapshot) {
-                    if (snapshot.hasData) {
-                      return Graph(widget.text, widget.objectId,
-                          historyList.data, snapshot.data, widget.tileSize);
+                  builder:
+                      (BuildContext context, AsyncSnapshot primarySnapshot) {
+                    if (primarySnapshot.hasData) {
+                      if (widget.secondayObjectId == '') {
+                        return Graph(widget.text, primaryHistoryList.data,
+                            primarySnapshot.data, widget.tileSize);
+                      } else {
+                        return FutureBuilder<List<HistoryModel>>(
+                          future: globals.httpService.getHistory(
+                              widget.secondayObjectId,
+                              widget.timespan != null ? widget.timespan : '1'),
+                          builder: (BuildContext context,
+                              AsyncSnapshot<List<HistoryModel>>
+                                  secondaryHistoryList) {
+                            if (secondaryHistoryList.hasData &&
+                                secondaryHistoryList.connectionState ==
+                                    ConnectionState.done) {
+                              return StreamBuilder(
+                                initialData: globals.socketService
+                                    .getObjectValue(widget.secondayObjectId),
+                                stream: globals.socketService
+                                    .getStreamController(
+                                        widget.secondayObjectId)
+                                    .stream,
+                                builder: (BuildContext context,
+                                    AsyncSnapshot secondarySnapshot) {
+                                  if (secondarySnapshot.hasData) {
+                                    return Graph(
+                                        widget.text,
+                                        primaryHistoryList.data,
+                                        primarySnapshot.data,
+                                        widget.tileSize,
+                                        secondaryHistoryList.data,
+                                        secondarySnapshot.data);
+                                  } else {
+                                    return CircularProgressIndicator();
+                                  }
+                                },
+                              );
+                            } else {
+                              return Center(child: CircularProgressIndicator());
+                            }
+                          },
+                        );
+                      }
                     } else {
                       return CircularProgressIndicator();
                     }
