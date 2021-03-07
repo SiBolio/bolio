@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:bolio/models/historyModel.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class SocketService {

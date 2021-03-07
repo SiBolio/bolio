@@ -1,5 +1,7 @@
 import 'package:bolio/pages/editWidgetPages/widgetOverviewPage.dart';
+import 'package:bolio/pages/networkSettingPage.dart';
 import 'package:bolio/pages/newWidgetPages/widgetTypePage.dart';
+import 'package:bolio/pages/setIpAddressPage.dart';
 import 'package:bolio/services/colorService.dart';
 import 'package:flutter/material.dart';
 
@@ -23,13 +25,13 @@ class _SettingsPageState extends State<SettingsPage> {
           ListTile(
             leading: ClipOval(
               child: Material(
-                color: ColorService.constMainColor,
+                color: ColorService.iconColorRedDark,
                 child: SizedBox(
                   width: 40,
                   height: 40,
                   child: Icon(
                     Icons.add,
-                    color: ColorService.constMainColorSub,
+                    color: ColorService.iconColorRedLight,
                   ),
                 ),
               ),
@@ -45,13 +47,13 @@ class _SettingsPageState extends State<SettingsPage> {
           ListTile(
             leading: ClipOval(
               child: Material(
-                color: ColorService.constMainColor,
+                color: ColorService.iconColorIndigoDark,
                 child: SizedBox(
                   width: 40,
                   height: 40,
                   child: Icon(
                     Icons.edit,
-                    color: ColorService.constMainColorSub,
+                    color: ColorService.iconColorIndigoLight,
                   ),
                 ),
               ),
@@ -64,14 +66,28 @@ class _SettingsPageState extends State<SettingsPage> {
               );
             },
           ),
-
-/*           ListTile(
-            leading: Icon(
-              Icons.edit_location_outlined,
-              color: ColorSerivce.constMainColor,
+          ListTile(
+            leading: ClipOval(
+              child: Material(
+                color: ColorService.iconColorLightGreenDark,
+                child: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Icon(
+                    Icons.network_check,
+                    color: ColorService.iconColorLightGreenLight,
+                  ),
+                ),
+              ),
             ),
-            title: Text('Seiten bearbeiten'),
-          ), */
+            title: Text('Netzwerkeinstellungen'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => NetworkSettingsPage()),
+              );
+            },
+          ),
         ],
       ),
     );

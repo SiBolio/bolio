@@ -121,9 +121,12 @@ class _DataPointPageState extends State<DataPointPage> {
         for (var child in currentNode.children) {
           if (child.name == objectPath[i]) {
             currentNode = child;
-            if (currentNode.expandNodeName == '') {
+
+            if (currentNode.expandNodeName == '' &&
+                i == objectPath.length - 1) {
               currentNode.expandNodeName = expandNodeName;
             }
+
             nodeFound = true;
           }
         }
@@ -184,7 +187,6 @@ class _DataPointPageState extends State<DataPointPage> {
             )
           : tiles.add(
               ExpansionTile(
-                subtitle: Text(child.name),
                 title: Text(child.expandNodeName),
                 children: _getChildrenTiles(child),
               ),

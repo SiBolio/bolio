@@ -19,7 +19,7 @@ class HttpService {
     AdapterModel aliasModel = new AdapterModel(
         'alias.0',
         'alias.0',
-        'Alias Objekte',
+        'alias.0',
         'Stammordner für Aliase',
         'https://raw.githubusercontent.com/ioBroker/ioBroker.admin/master/admin/admin.png');
     responseList.add(aliasModel);
@@ -27,7 +27,7 @@ class HttpService {
     AdapterModel userDataModel = new AdapterModel(
         '0_userdata.0',
         '0_userdata.0',
-        'Benutzerobjekte',
+        '0_userdata.0',
         'Stammordner für Benutzerobjekte und Dateien',
         'https://raw.githubusercontent.com/ioBroker/ioBroker.admin/master/admin/admin.png');
     responseList.add(userDataModel);

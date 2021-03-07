@@ -11,4 +11,12 @@ class ColorService {
   static const primarySwatch = Colors.blueGrey;
   static const selectionPrimary = Color(0xFF4f9a94);
   static const selectionSecondary = Color(0xFFcaae53);
+  static Color iconColorRedLight = Color(0xFFffffff);
+  static Color iconColorRedDark = Color(0xFFcb9ca1);
+  static Color iconColorIndigoLight = Color(0xFFf8fdff);
+  static Color iconColorIndigoDark = Color(0xFF9499b7);
+  static Color iconColorLightGreenLight = Color(0xFFfffffb);
+  static Color iconColorLightGreenDark = Color(0xFFaabb97);
+  static Color iconColorLightBlueDark = Color(0xFF82b3c9);
+  static Color iconColorOrangeDark = Color(0xFFcbae82);
 }

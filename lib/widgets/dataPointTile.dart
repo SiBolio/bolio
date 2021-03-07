@@ -19,9 +19,14 @@ class DataPointTile extends StatelessWidget {
     return ListTile(
       leading: ClipOval(
         child: Material(
-          color: ColorService.constMainColor,
+          color: _getTileIconColor(child.type),
           child: SizedBox(
-              width: 40, height: 40, child: Icon(_getTileIcon(child.type))),
+            width: 40,
+            height: 40,
+            child: Icon(
+              _getTileIcon(child.type),
+            ),
+          ),
         ),
       ),
       tileColor: _getDataPointTileColor(),
@@ -76,6 +81,30 @@ class DataPointTile extends StatelessWidget {
       default:
         print('Typ:' + type.toString());
         return Icons.circle;
+        break;
+    }
+  }
+
+  Color _getTileIconColor(String type) {
+    switch (type) {
+      case 'boolean':
+        return ColorService.iconColorIndigoDark;
+        break;
+      case 'number':
+        return ColorService.iconColorLightGreenDark;
+        break;
+      case 'string':
+        return ColorService.iconColorRedDark;
+        break;
+      case 'value':
+        return ColorService.iconColorLightBlueDark;
+        break;
+      case 'text':
+        return ColorService.iconColorOrangeDark;
+        break;
+      default:
+        print('Typ:' + type.toString());
+        return Colors.red;
         break;
     }
   }
