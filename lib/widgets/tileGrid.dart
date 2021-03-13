@@ -1,18 +1,21 @@
 import 'package:bolio/models/saveModel.dart';
 import 'package:bolio/services/colorService.dart';
 import 'package:bolio/services/saveService.dart';
+import 'package:bolio/services/settingsService.dart';
 import 'package:bolio/widgets/smarthomeCard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class TileGrid extends StatefulWidget {
   SaveService saveService;
+  SettingsService settingsService;
 
   @override
   State<StatefulWidget> createState() => _TileGridState();
 
   TileGrid() {
     saveService = new SaveService();
+    settingsService = new SettingsService();
   }
 }
 
@@ -26,7 +29,7 @@ class _TileGridState extends State<TileGrid> {
             snapshot.connectionState == ConnectionState.done) {
           return snapshot.data.length > 0
               ? StaggeredGridView.countBuilder(
-                  crossAxisCount: _getCrossAxisCount(),
+                  crossAxisCount: widget.settingsService.getCrossAxisCount(context),
                   itemCount: snapshot.data.length,
                   itemBuilder: (BuildContext context, int index) {
                     return SmarthomeCard(
@@ -70,20 +73,5 @@ class _TileGridState extends State<TileGrid> {
         }
       },
     );
-  }
-
-  _getCrossAxisCount() {
-    int axisCount;
-    double width = MediaQuery.of(context).size.width;
-    if (width > 1300) {
-      axisCount = 10;
-    } else if (width > 1000) {
-      axisCount = 8;
-    } else if (width > 600) {
-      axisCount = 6;
-    } else {
-      axisCount = 3;
-    }
-    return axisCount;
   }
 }

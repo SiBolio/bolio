@@ -7,7 +7,6 @@ import 'package:bolio/services/httpService.dart';
 import 'package:bolio/widgets/dataPointHintCard.dart';
 import 'package:bolio/widgets/dataPointTile.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class DataPointPage extends StatefulWidget {
   String primaryObjectId = '';
@@ -54,7 +53,7 @@ class _DataPointPageState extends State<DataPointPage> {
                 );
               },
               elevation: 2.0,
-              fillColor: ColorService.constMainColor,
+              fillColor: ColorService.constAccentColor,
               child: Icon(
                 Icons.arrow_forward_ios_sharp,
               ),
@@ -152,7 +151,7 @@ class _DataPointPageState extends State<DataPointPage> {
       itemCount: 1,
       itemBuilder: (context, index) {
         return ExpansionTile(
-          title: Text(root.name),
+          title:  Text(root.name ),
           children: _getChildrenTiles(root),
           initiallyExpanded: true,
         );
@@ -190,7 +189,7 @@ class _DataPointPageState extends State<DataPointPage> {
             )
           : tiles.add(
               ExpansionTile(
-                title: Text(child.expandNodeName),
+                title: Text(child.expandNodeName != '' ? child.expandNodeName: child.name),
                 children: _getChildrenTiles(child),
               ),
             );

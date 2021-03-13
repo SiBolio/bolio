@@ -3,11 +3,14 @@ import 'package:bolio/models/saveModel.dart';
 import 'package:bolio/pages/newWidgetPages/dataPointPage.dart';
 import 'package:bolio/services/colorService.dart';
 import 'package:bolio/services/httpService.dart';
+import 'package:bolio/services/settingsService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class AdapterSelectPage extends StatefulWidget {
   HttpService httpService;
+  SettingsService settingsService;
+
   String selectedItem = '';
   List<AdapterModel> adapterModels = [];
   SaveModel saveCMD;
@@ -16,7 +19,8 @@ class AdapterSelectPage extends StatefulWidget {
   _AdapterSelectPageState createState() => _AdapterSelectPageState();
 
   AdapterSelectPage(this.saveCMD) {
-    this.httpService = new HttpService();
+    httpService = new HttpService();
+    settingsService = new SettingsService();
   }
 }
 
@@ -34,7 +38,6 @@ class _AdapterSelectPageState extends State<AdapterSelectPage> {
             visible: widget.selectedItem != '',
             child: RawMaterialButton(
               onPressed: () {
-
                 widget.saveCMD.adapterId = widget.selectedItem;
                 Navigator.push(
                   context,
@@ -44,7 +47,7 @@ class _AdapterSelectPageState extends State<AdapterSelectPage> {
                 );
               },
               elevation: 2.0,
-              fillColor: ColorService.constMainColor,
+              fillColor: ColorService.constAccentColor,
               child: Icon(
                 Icons.arrow_forward_ios_sharp,
               ),
@@ -61,7 +64,8 @@ class _AdapterSelectPageState extends State<AdapterSelectPage> {
                 if (_adapterCards.hasData &&
                     _adapterCards.connectionState == ConnectionState.done) {
                   return StaggeredGridView.count(
-                    crossAxisCount: 3,
+                    crossAxisCount:
+                        widget.settingsService.getCrossAxisCount(context),
                     staggeredTiles: List<StaggeredTile>.generate(
                         widget.adapterModels.length, (index) {
                       return StaggeredTile.count(1, 1);
@@ -77,7 +81,7 @@ class _AdapterSelectPageState extends State<AdapterSelectPage> {
               },
             )
           : StaggeredGridView.count(
-              crossAxisCount: 3,
+              crossAxisCount: widget.settingsService.getCrossAxisCount(context),
               staggeredTiles: List<StaggeredTile>.generate(
                   widget.adapterModels.length, (index) {
                 return StaggeredTile.count(1, 1);

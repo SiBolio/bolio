@@ -4,7 +4,6 @@ import 'package:bolio/services/colorService.dart';
 import 'package:bolio/widgets/simpleBarChard.dart';
 import 'package:bolio/widgets/simpleLineChart.dart';
 import 'package:flutter/material.dart';
-import 'package:bolio/services/globals.dart' as globals;
 
 class Graph extends StatefulWidget {
   final String text;
@@ -68,20 +67,44 @@ class _GraphState extends State<Graph> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              AutoSizeText(
-                                widget.primaryCurrentValue,
-                                maxLines: 1,
-                                style: TextStyle(
-                                    fontSize: 30.0,
-                                    color: ColorService.constMainColorSub),
+                              Column(
+                                children: [
+                                  Text(
+                                    'aktuell:',
+                                    style: TextStyle(
+                                      fontSize: 12.0,
+                                      color: ColorService.constMainColorSub,
+                                    ),
+                                  ),
+                                  AutoSizeText(
+                                    widget.primaryCurrentValue,
+                                    maxLines: 1,
+                                    style: TextStyle(
+                                        fontSize: 30.0,
+                                        color: ColorService.constMainColorSub),
+                                  ),
+                                ],
                               ),
                               widget.secondaryCurrentValue != null
-                                  ? AutoSizeText(
-                                      widget.secondaryCurrentValue,
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                          fontSize: 30.0,
-                                          color: ColorService.constMainColor),
+                                  ? Column(
+                                      children: [
+                                        Text(
+                                          'aktuell:',
+                                          style: TextStyle(
+                                            fontSize: 12.0,
+                                            color:
+                                                ColorService.constMainColor,
+                                          ),
+                                        ),
+                                        AutoSizeText(
+                                          widget.secondaryCurrentValue,
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                              fontSize: 30.0,
+                                              color:
+                                                  ColorService.constMainColor),
+                                        ),
+                                      ],
                                     )
                                   : Container(),
                             ],

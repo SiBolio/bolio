@@ -1,12 +1,13 @@
 import 'package:bolio/models/saveModel.dart';
-import 'package:bolio/pages/newWidgetPages/adapterSelectPage.dart';
 import 'package:bolio/pages/newWidgetPages/summaryPage.dart';
 import 'package:bolio/services/colorService.dart';
+import 'package:bolio/services/settingsService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class WidgetSizePage extends StatefulWidget {
   String selectedSize = '';
+  SettingsService settingsService;
 
   List<String> types = [
     'Breites Widget',
@@ -24,7 +25,9 @@ class WidgetSizePage extends StatefulWidget {
 
   SaveModel saveCMD;
 
-  WidgetSizePage(this.saveCMD);
+  WidgetSizePage(this.saveCMD) {
+    settingsService = new SettingsService();
+  }
 
   @override
   _WidgetSizePageState createState() => _WidgetSizePageState();
@@ -53,7 +56,7 @@ class _WidgetSizePageState extends State<WidgetSizePage> {
                 );
               },
               elevation: 2.0,
-              fillColor: ColorService.constMainColor,
+              fillColor: ColorService.constAccentColor,
               child: Icon(
                 Icons.arrow_forward_ios_sharp,
               ),
@@ -63,7 +66,7 @@ class _WidgetSizePageState extends State<WidgetSizePage> {
         ],
       ),
       body: StaggeredGridView.count(
-        crossAxisCount: 3,
+        crossAxisCount: widget.settingsService.getCrossAxisCount(context),
         staggeredTiles: [
           StaggeredTile.count(3, 1.5),
           StaggeredTile.count(1, 1),

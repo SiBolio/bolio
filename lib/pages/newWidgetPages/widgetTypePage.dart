@@ -1,10 +1,13 @@
 import 'package:bolio/models/saveModel.dart';
 import 'package:bolio/pages/newWidgetPages/adapterSelectPage.dart';
 import 'package:bolio/services/colorService.dart';
+import 'package:bolio/services/settingsService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class WidgetTypePage extends StatefulWidget {
+  SettingsService settingsService;
+
   String selectedItem = '';
 
   List<String> types = [
@@ -23,6 +26,10 @@ class WidgetTypePage extends StatefulWidget {
     Icons.swipe,
     Icons.lightbulb_outline
   ];
+
+  WidgetTypePage() {
+    settingsService = new SettingsService();
+  }
 
   @override
   _WidgetTypePageState createState() => _WidgetTypePageState();
@@ -52,7 +59,7 @@ class _WidgetTypePageState extends State<WidgetTypePage> {
                 );
               },
               elevation: 2.0,
-              fillColor: ColorService.constMainColor,
+              fillColor: ColorService.constAccentColor,
               child: Icon(
                 Icons.arrow_forward_ios_sharp,
               ),
@@ -62,8 +69,9 @@ class _WidgetTypePageState extends State<WidgetTypePage> {
         ],
       ),
       body: StaggeredGridView.count(
-        crossAxisCount: 3,
-        staggeredTiles: List<StaggeredTile>.generate(widget.types.length, (index) {
+        crossAxisCount: widget.settingsService.getCrossAxisCount(context),
+        staggeredTiles:
+            List<StaggeredTile>.generate(widget.types.length, (index) {
           return StaggeredTile.count(1, 1);
         }),
         children: getWidgetTypeCards(),

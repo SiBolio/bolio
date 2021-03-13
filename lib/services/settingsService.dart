@@ -1,5 +1,5 @@
-
 import 'package:bolio/models/ipAddressModel.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsService {
@@ -48,5 +48,18 @@ class SettingsService {
     }
   }
 
- 
+  getCrossAxisCount(context) {
+    int axisCount;
+    double width = MediaQuery.of(context).size.width;
+    if (width > 1300) {
+      axisCount = 10;
+    } else if (width > 1000) {
+      axisCount = 8;
+    } else if (width > 600) {
+      axisCount = 6;
+    } else {
+      axisCount = 3;
+    }
+    return axisCount;
+  }
 }
