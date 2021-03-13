@@ -10,12 +10,14 @@ class WidgetTypePage extends StatefulWidget {
   List<String> types = [
     'Einzelwert',
     'Graph',
+    'Balkendiagramm',
     'On/Off Button',
     'Slider',
     'Licht'
   ];
   List<IconData> icons = [
     Icons.looks_two_outlined,
+    Icons.show_chart,
     Icons.bar_chart_sharp,
     Icons.power_settings_new,
     Icons.swipe,
@@ -61,7 +63,7 @@ class _WidgetTypePageState extends State<WidgetTypePage> {
       ),
       body: StaggeredGridView.count(
         crossAxisCount: 3,
-        staggeredTiles: List<StaggeredTile>.generate(5, (index) {
+        staggeredTiles: List<StaggeredTile>.generate(widget.types.length, (index) {
           return StaggeredTile.count(1, 1);
         }),
         children: getWidgetTypeCards(),
@@ -73,7 +75,7 @@ class _WidgetTypePageState extends State<WidgetTypePage> {
   }
 
   List<Widget> getWidgetTypeCards() {
-    return List<Widget>.generate(5, (index) {
+    return List<Widget>.generate(widget.types.length, (index) {
       return GestureDetector(
           onTap: () {
             setState(() {

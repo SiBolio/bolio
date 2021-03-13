@@ -7,15 +7,20 @@ class SaveModel {
   String size;
   String adapterId;
   String timeSpan;
+  String minimum;
+  String maximum;
 
-  SaveModel(
-      {this.name,
-      this.objectId,
-      this.secondaryObjectId,
-      this.type,
-      this.size,
-      this.adapterId,
-      this.timeSpan}) {
+  SaveModel({
+    this.name,
+    this.objectId,
+    this.secondaryObjectId,
+    this.type,
+    this.size,
+    this.adapterId,
+    this.timeSpan,
+    this.minimum,
+    this.maximum,
+  }) {
     this.uid = new DateTime.now().millisecondsSinceEpoch.toString();
   }
 
@@ -30,6 +35,8 @@ class SaveModel {
     saveModel.adapterId = _json['adapterId'];
     saveModel.uid = _json['uid'];
     saveModel.timeSpan = _json['timeSpan'];
+    saveModel.minimum = _json['minimum'];
+    saveModel.maximum = _json['maximum'];
 
     return saveModel;
   }
@@ -43,5 +50,7 @@ class SaveModel {
         'adapterId': adapterId,
         'uid': uid,
         'timeSpan': timeSpan,
+        'minimum': minimum,
+        'maximum': maximum,
       };
 }

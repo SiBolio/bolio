@@ -3,28 +3,27 @@ import 'package:bolio/services/colorService.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
 
-class SimpleLineChart extends StatelessWidget {
+class SimpleBarChart extends StatelessWidget {
   final List<HistoryModel> primaryHistoryList;
   final List<HistoryModel> secondaryHistoryList;
   final String tileSize;
+  final String timeSpan;
   final String minimum;
   final String maximum;
 
-  SimpleLineChart(this.primaryHistoryList, this.tileSize,
+  SimpleBarChart(this.primaryHistoryList, this.tileSize, this.timeSpan,
       [this.secondaryHistoryList, this.minimum, this.maximum]);
 
   @override
   Widget build(BuildContext context) {
-    return new charts.TimeSeriesChart(
+    return new charts.BarChart(
       _getSeriesList(),
       animate: true,
-      dateTimeFactory: const charts.LocalDateTimeFactory(),
-      domainAxis: charts.DateTimeAxisSpec(
-        renderSpec: new charts.NoneRenderSpec(),
-      ),
+      domainAxis:
+          new charts.OrdinalAxisSpec(renderSpec: new charts.NoneRenderSpec()),
       primaryMeasureAxis: new charts.NumericAxisSpec(
         renderSpec: tileSize == 'M'
-            ? new charts.NoneRenderSpec()
+            ? charts.NoneRenderSpec()
             : new charts.GridlineRendererSpec(
                 labelStyle: new charts.TextStyleSpec(
                   fontSize: 18,
@@ -34,30 +33,18 @@ class SimpleLineChart extends StatelessWidget {
                   color: charts.ColorUtil.fromDartColor(Colors.grey),
                 ),
               ),
-        tickProviderSpec: new charts.BasicNumericTickProviderSpec(
-            desiredTickCount: 2, zeroBound: false),
       ),
     );
   }
 
-  List<charts.Series<HistoryModel, DateTime>> _getSeriesList() {
-    List<charts.Series<HistoryModel, DateTime>> returnList = [];
+  List<charts.Series<HistoryModel, String>> _getSeriesList() {
+    List<HistoryModel> clusteredList =
+        _getClusteredList(this.primaryHistoryList);
 
-    if (secondaryHistoryList != null) {
-      returnList.add(new charts.Series<HistoryModel, DateTime>(
-        id: 'HistorySecondary',
-        colorFn: (HistoryModel history, __) {
-          return charts.ColorUtil.fromDartColor(ColorService.constMainColor);
-        },
-        domainFn: (HistoryModel history, _) => history.timeStamp,
-        measureFn: (HistoryModel history, _) => history.value,
-        strokeWidthPxFn: (HistoryModel history, _) => 2,
-        data: this.secondaryHistoryList,
-      ));
-    }
+    List<charts.Series<HistoryModel, String>> returnList = [];
 
-    returnList.add(new charts.Series<HistoryModel, DateTime>(
-      id: 'HistoryPrimary',
+    returnList.add(new charts.Series<HistoryModel, String>(
+      id: 'HistorySecondary',
       colorFn: (HistoryModel history, __) {
         if (minimum == null && maximum == null) {
           return charts.ColorUtil.fromDartColor(ColorService.constMainColorSub);
@@ -76,12 +63,35 @@ class SimpleLineChart extends StatelessWidget {
               : charts.ColorUtil.fromDartColor(ColorService.graphDanger);
         }
       },
-      domainFn: (HistoryModel history, _) => history.timeStamp,
+      domainFn: (HistoryModel history, _) => history.timeStamp.toString(),
       measureFn: (HistoryModel history, _) => history.value,
       strokeWidthPxFn: (HistoryModel history, _) => 2,
-      data: this.primaryHistoryList,
+      data: clusteredList,
     ));
 
     return returnList;
+  }
+
+  List<HistoryModel> _getClusteredList(List<HistoryModel> primaryHistoryList) {
+    List<HistoryModel> clusterItems = [];
+
+    double clusterSum = 0;
+    var itemsInCluster =
+        (primaryHistoryList.length / double.parse(timeSpan)).floor();
+    var clusterIndex = 0;
+
+    for (var i = 0; i < primaryHistoryList.length; i++) {
+      if (clusterIndex < itemsInCluster - 1) {
+        clusterSum = clusterSum + primaryHistoryList[i].value;
+        clusterIndex++;
+      } else {
+        clusterItems.add(HistoryModel(
+            primaryHistoryList[i].timeStamp, clusterSum / itemsInCluster));
+        clusterSum = 0;
+        clusterIndex = 0;
+      }
+    }
+
+    return clusterItems;
   }
 }

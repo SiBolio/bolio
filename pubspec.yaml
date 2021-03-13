@@ -17,6 +17,8 @@ dependencies:
   charts_flutter: ^0.9.0
   shared_preferences: ^0.5.12+4
   flutter_launcher_icons: ^0.9.0
+  image: ^3.0.1
+
 
 dev_dependencies:
   flutter_test:
@@ -31,5 +33,5 @@ flutter_icons:
   android: "launcher_icon"
   ios: true
   image_path: "assets/logo.png"
-
+  adaptive_icon_background: "#936FEB"
 

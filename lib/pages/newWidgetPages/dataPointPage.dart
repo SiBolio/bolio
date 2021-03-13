@@ -12,6 +12,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 class DataPointPage extends StatefulWidget {
   String primaryObjectId = '';
   String secondaryObjectId = '';
+  String selectedText = '';
 
   String selectionStep = '';
 
@@ -44,6 +45,7 @@ class _DataPointPageState extends State<DataPointPage> {
               onPressed: () {
                 widget.saveCMD.objectId = widget.primaryObjectId;
                 widget.saveCMD.secondaryObjectId = widget.secondaryObjectId;
+                widget.saveCMD.name = widget.selectedText;
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -166,6 +168,7 @@ class _DataPointPageState extends State<DataPointPage> {
               GestureDetector(
                 onTap: () {
                   setState(() {
+                    widget.selectedText = child.dataPointName;
                     switch (widget.selectionStep) {
                       case 'primary':
                         widget.primaryObjectId = child.objectId;

@@ -36,6 +36,8 @@ class _TileGridState extends State<TileGrid> {
                       snapshot.data[index].name,
                       snapshot.data[index].secondaryObjectId,
                       snapshot.data[index].timeSpan,
+                      snapshot.data[index].minimum,
+                      snapshot.data[index].maximum,
                     );
                   },
                   staggeredTileBuilder: (int index) {

@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:bolio/models/historyModel.dart';
 import 'package:bolio/services/colorService.dart';
+import 'package:bolio/widgets/simpleBarChard.dart';
 import 'package:bolio/widgets/simpleLineChart.dart';
 import 'package:flutter/material.dart';
 import 'package:bolio/services/globals.dart' as globals;
@@ -12,14 +13,22 @@ class Graph extends StatefulWidget {
   final String primaryCurrentValue;
   final String secondaryCurrentValue;
   final String tileSize;
+  final String graphType;
+  final String timeSpan;
+  final String minimum;
+  final String maximum;
 
   Graph(
     this.text,
     this.primaryHistory,
     this.primaryCurrentValue,
-    this.tileSize, [
+    this.tileSize,
+    this.timeSpan,
+    this.graphType, [
     this.secondaryHistory,
     this.secondaryCurrentValue,
+    this.minimum,
+    this.maximum,
   ]);
 
   @override
@@ -51,11 +60,7 @@ class _GraphState extends State<Graph> {
                         Flexible(
                           flex: 5,
                           fit: FlexFit.tight,
-                          child: widget.secondaryHistory == null
-                              ? SimpleLineChart(
-                                  widget.primaryHistory, widget.tileSize)
-                              : SimpleLineChart(widget.primaryHistory,
-                                  widget.tileSize, widget.secondaryHistory),
+                          child: _getChart(),
                         ),
                         Flexible(
                           flex: 1,
@@ -66,13 +71,19 @@ class _GraphState extends State<Graph> {
                               AutoSizeText(
                                 widget.primaryCurrentValue,
                                 maxLines: 1,
-                                style: TextStyle(fontSize: 30.0, color: ColorService.constMainColorSub),
+                                style: TextStyle(
+                                    fontSize: 30.0,
+                                    color: ColorService.constMainColorSub),
                               ),
-                              AutoSizeText(
-                                widget.secondaryCurrentValue,
-                                maxLines: 1,
-                                style: TextStyle(fontSize: 30.0, color: ColorService.constMainColor),
-                              ),
+                              widget.secondaryCurrentValue != null
+                                  ? AutoSizeText(
+                                      widget.secondaryCurrentValue,
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                          fontSize: 30.0,
+                                          color: ColorService.constMainColor),
+                                    )
+                                  : Container(),
                             ],
                           ),
                         ),
@@ -81,11 +92,7 @@ class _GraphState extends State<Graph> {
                   )
                 : Flexible(
                     flex: 3,
-                    child: widget.secondaryHistory == null
-                        ? SimpleLineChart(
-                            widget.primaryHistory, widget.tileSize)
-                        : SimpleLineChart(widget.primaryHistory,
-                            widget.tileSize, widget.secondaryHistory),
+                    child: _getChart(),
                   ),
             Flexible(
               flex: 1,
@@ -105,5 +112,20 @@ class _GraphState extends State<Graph> {
         ),
       ),
     );
+  }
+
+  Widget _getChart() {
+    if (widget.graphType == 'Graph') {
+      if (widget.secondaryHistory == null) {
+        return SimpleLineChart(widget.primaryHistory, widget.tileSize, null,
+            widget.minimum, widget.maximum);
+      } else {
+        return SimpleLineChart(widget.primaryHistory, widget.tileSize,
+            widget.secondaryHistory, widget.minimum, widget.maximum);
+      }
+    } else if (widget.graphType == 'Balkendiagramm') {
+      return SimpleBarChart(widget.primaryHistory, widget.tileSize,
+          widget.timeSpan, null, widget.minimum, widget.maximum);
+    }
   }
 }

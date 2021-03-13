@@ -19,4 +19,6 @@ class ColorService {
   static Color iconColorLightGreenDark = Color(0xFFaabb97);
   static Color iconColorLightBlueDark = Color(0xFF82b3c9);
   static Color iconColorOrangeDark = Color(0xFFcbae82);
+  static const settingsCard = Color(0xFF102027);
+    static const graphDanger = Color(0xFFff5252);
 }

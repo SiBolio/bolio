@@ -14,6 +14,8 @@ class SmarthomeCard extends StatefulWidget {
   final String text;
   final String secondayObjectId;
   final String timespan;
+  final String minimum;
+  final String maximum;
 
   SmarthomeCard(
     this.objectId,
@@ -22,6 +24,8 @@ class SmarthomeCard extends StatefulWidget {
     this.text, [
     this.secondayObjectId,
     this.timespan,
+    this.minimum,
+    this.maximum,
   ]);
 
   @override
@@ -129,8 +133,18 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                       (BuildContext context, AsyncSnapshot primarySnapshot) {
                     if (primarySnapshot.hasData) {
                       if (widget.secondayObjectId == '') {
-                        return Graph(widget.text, primaryHistoryList.data,
-                            primarySnapshot.data, widget.tileSize);
+                        return Graph(
+                          widget.text,
+                          primaryHistoryList.data,
+                          primarySnapshot.data,
+                          widget.tileSize,
+                          widget.timespan,
+                          'Graph',
+                          null,
+                          null,
+                          widget.minimum,
+                          widget.maximum,
+                        );
                       } else {
                         return FutureBuilder<List<HistoryModel>>(
                           future: globals.httpService.getHistory(
@@ -153,12 +167,17 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                                     AsyncSnapshot secondarySnapshot) {
                                   if (secondarySnapshot.hasData) {
                                     return Graph(
-                                        widget.text,
-                                        primaryHistoryList.data,
-                                        primarySnapshot.data,
-                                        widget.tileSize,
-                                        secondaryHistoryList.data,
-                                        secondarySnapshot.data);
+                                      widget.text,
+                                      primaryHistoryList.data,
+                                      primarySnapshot.data,
+                                      widget.tileSize,
+                                      widget.timespan,
+                                      'Graph',
+                                      secondaryHistoryList.data,
+                                      secondarySnapshot.data,
+                                      widget.minimum,
+                                      widget.maximum,
+                                    );
                                   } else {
                                     return CircularProgressIndicator();
                                   }
@@ -170,6 +189,47 @@ class _SmarthomeCardState extends State<SmarthomeCard> {
                           },
                         );
                       }
+                    } else {
+                      return CircularProgressIndicator();
+                    }
+                  },
+                );
+              } else {
+                return Center(child: CircularProgressIndicator());
+              }
+            },
+          );
+        }
+      case 'Balkendiagramm':
+        {
+          return FutureBuilder<List<HistoryModel>>(
+            future: globals.httpService.getHistory(widget.objectId,
+                widget.timespan != null ? widget.timespan : '1'),
+            builder: (BuildContext context,
+                AsyncSnapshot<List<HistoryModel>> primaryHistoryList) {
+              if (primaryHistoryList.hasData &&
+                  primaryHistoryList.connectionState == ConnectionState.done) {
+                return StreamBuilder(
+                  initialData:
+                      globals.socketService.getObjectValue(widget.objectId),
+                  stream: globals.socketService
+                      .getStreamController(widget.objectId)
+                      .stream,
+                  builder:
+                      (BuildContext context, AsyncSnapshot primarySnapshot) {
+                    if (primarySnapshot.hasData) {
+                      return Graph(
+                        widget.text,
+                        primaryHistoryList.data,
+                        primarySnapshot.data,
+                        widget.tileSize,
+                        widget.timespan,
+                        'Balkendiagramm',
+                        null,
+                        null,
+                        widget.minimum,
+                        widget.maximum,
+                      );
                     } else {
                       return CircularProgressIndicator();
                     }
